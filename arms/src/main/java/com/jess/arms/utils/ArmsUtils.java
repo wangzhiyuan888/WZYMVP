@@ -39,12 +39,17 @@ import com.jess.arms.base.App;
 import com.jess.arms.di.component.AppComponent;
 import com.jess.arms.integration.AppManager;
 
+import org.simple.eventbus.EventBus;
+
 import java.security.MessageDigest;
 
+import static com.jess.arms.integration.AppManager.APPMANAGER_MESSAGE;
 import static com.jess.arms.integration.AppManager.APP_EXIT;
 import static com.jess.arms.integration.AppManager.KILL_ALL;
+import static com.jess.arms.integration.AppManager.KILL_EXCEPT_CLASS;
 import static com.jess.arms.integration.AppManager.SHOW_SNACKBAR;
 import static com.jess.arms.integration.AppManager.START_ACTIVITY;
+import static com.jess.arms.integration.AppManager.ACTIVITY_MESSAGE;
 
 /**
  * ================================================
@@ -433,6 +438,30 @@ public class ArmsUtils {
     public static AppComponent obtainAppComponentFromContext(Context context) {
         Preconditions.checkState(context.getApplicationContext() instanceof App, "Application does not implements App");
         return ((App) context.getApplicationContext()).getAppComponent();
+    }
+
+    /**
+     * 向目标Activity传递信息
+     * @param object  为Map<String,Object>对象，其中必须包含一个"class"对象，以确定目标Activity
+     */
+    public static void targetActivityMessageByClass(Object object){
+        Message message = new Message();
+        message.what = ACTIVITY_MESSAGE;
+        message.obj = object;
+        EventBus.getDefault().post(message, APPMANAGER_MESSAGE);
+
+    }
+
+    /**
+     * 关闭除了目标Activity，以外的其他所有Activity
+     * @param activityClass
+     */
+    public static void killActivityExceptByClass(Class<?> activityClass){
+        Message message = new Message();
+        message.what = KILL_EXCEPT_CLASS;
+        message.obj = activityClass;
+        EventBus.getDefault().post(message, APPMANAGER_MESSAGE);
+
     }
 
 }

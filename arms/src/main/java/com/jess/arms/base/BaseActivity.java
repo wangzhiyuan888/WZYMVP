@@ -115,4 +115,13 @@ public abstract class BaseActivity<P extends IPresenter> extends AppCompatActivi
     public boolean useFragment() {
         return true;
     }
+
+
+    /**
+     * 获取需要的数据源
+     * @param object
+     */
+    public void returnTargetData(Object object){
+
+    }
 }

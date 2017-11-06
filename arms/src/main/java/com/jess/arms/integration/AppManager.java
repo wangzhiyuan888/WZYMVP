@@ -23,6 +23,7 @@ import android.os.Message;
 import android.support.design.widget.Snackbar;
 import android.view.View;
 
+import com.jess.arms.base.BaseActivity;
 import com.jess.arms.base.delegate.AppLifecycles;
 
 import org.simple.eventbus.EventBus;
@@ -33,6 +34,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -60,6 +62,8 @@ public final class AppManager {
     public static final int SHOW_SNACKBAR = 5001;
     public static final int KILL_ALL = 5002;
     public static final int APP_EXIT = 5003;
+    public static final int ACTIVITY_MESSAGE = 5004;
+    public static final int KILL_EXCEPT_CLASS = 5005;
     private Application mApplication;
     //管理所有activity
     public List<Activity> mActivityList;
@@ -96,6 +100,16 @@ public final class AppManager {
                 break;
             case APP_EXIT:
                 appExit();
+                break;
+            case ACTIVITY_MESSAGE:
+                if (message.obj == null)
+                    break;
+                TargetActivityMessageByClass(message.obj);
+                break;
+            case KILL_EXCEPT_CLASS:
+                if (message.obj == null)
+                    break;
+                killActivityExceptByClass((Class<?>)message.obj);
                 break;
             default:
                 Timber.tag(TAG).w("The message.what not match");
@@ -439,5 +453,42 @@ public final class AppManager {
 
     public interface HandleListener {
         void handleMessage(AppManager appManager, Message message);
+    }
+
+    /**
+     * 向目标Activity传递信息
+     * @param object  为Map<String,Object>对象，其中必须包含一个"class"对象，以确定目标Activity
+     */
+    public void TargetActivityMessageByClass(Object object){
+        if (mActivityList == null) {
+            Timber.tag(TAG).w("mActivityList == null when killActivity");
+            return;
+        }
+        Class<?> activityClass = (Class<?>) ((Map<String,Object>)object).get("class");
+        for (Activity activity : mActivityList){
+            if (activity.getClass().equals(activityClass)) {
+                //向目标Activity传值
+                ((BaseActivity) activity).returnTargetData(object);
+            }
+
+        }
+
+    }
+
+    /**
+     * 关闭除了目标Activity，以外的其他所有Activity
+     * @param activityClass
+     */
+    public void killActivityExceptByClass(Class<?> activityClass) {
+        if (mActivityList == null) {
+            Timber.tag(TAG).w("mActivityList == null when killActivity");
+            return;
+        }
+        for (Activity activity : mActivityList){
+            if (!activity.getClass().equals(activityClass)) {
+                activity.finish();
+            }
+
+        }
     }
 }
