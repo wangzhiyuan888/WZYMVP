@@ -87,7 +87,6 @@ public class UserActivity extends BaseActivity<UserPresenter> implements UserCon
         initPaginate();
     }
 
-
     @Override
     public void onRefresh() {
         mPresenter.requestUsers(true);

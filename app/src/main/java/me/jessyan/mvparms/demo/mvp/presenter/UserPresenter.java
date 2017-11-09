@@ -23,6 +23,7 @@ import android.support.v4.app.SupportActivity;
 import android.support.v7.widget.RecyclerView;
 
 import com.jess.arms.di.scope.ActivityScope;
+import com.jess.arms.http.imageloader.ImageLoader;
 import com.jess.arms.integration.AppManager;
 import com.jess.arms.mvp.BasePresenter;
 import com.jess.arms.utils.PermissionUtil;
@@ -34,6 +35,7 @@ import javax.inject.Inject;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
+import me.jessyan.mvparms.demo.mvp.contract.FindContract;
 import me.jessyan.mvparms.demo.mvp.contract.UserContract;
 import me.jessyan.mvparms.demo.mvp.model.entity.User;
 import me.jessyan.rxerrorhandler.core.RxErrorHandler;
@@ -63,8 +65,9 @@ public class UserPresenter extends BasePresenter<UserContract.Model, UserContrac
 
 
     @Inject
-    public UserPresenter(UserContract.Model model, UserContract.View rootView, RxErrorHandler handler
-            , AppManager appManager, Application application, List<User> list, RecyclerView.Adapter adapter) {
+    public UserPresenter(UserContract.Model model, UserContract.View rootView
+            , RxErrorHandler handler, Application application
+            , ImageLoader imageLoader, AppManager appManager, List<User> list, RecyclerView.Adapter adapter) {
         super(model, rootView);
         this.mApplication = application;
         this.mErrorHandler = handler;

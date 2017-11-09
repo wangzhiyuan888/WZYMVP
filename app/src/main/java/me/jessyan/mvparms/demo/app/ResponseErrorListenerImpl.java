@@ -26,6 +26,8 @@ import org.json.JSONException;
 
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
 
 import me.jessyan.rxerrorhandler.handler.listener.ResponseErrorListener;
 import retrofit2.HttpException;
@@ -58,6 +60,41 @@ public class ResponseErrorListenerImpl implements ResponseErrorListener {
             msg = "数据解析错误";
         }
         ArmsUtils.snackbarText(msg);
+        Map<String,Object> map = new HashMap<>();
+        switch (msg){
+            case "网络不可用":
+                map.put("type", "1");
+                ArmsUtils.showTagView(map);
+                break;
+            case "请求网络超时":
+                map.put("type", "2");
+                ArmsUtils.showTagView(map);
+                break;
+            case "数据解析错误":
+                map.put("type", "3");
+                ArmsUtils.showTagView(map);
+                break;
+            case "服务器发生错误":
+                map.put("type", "4");
+                ArmsUtils.showTagView(map);
+                break;
+            case "请求地址不存在":
+                map.put("type", "5");
+                ArmsUtils.showTagView(map);
+                break;
+            case "请求被服务器拒绝":
+                map.put("type", "6");
+                ArmsUtils.showTagView(map);
+                break;
+            case "请求被重定向到其他页面":
+                map.put("type", "7");
+                ArmsUtils.showTagView(map);
+                break;
+            case "未知错误":
+                map.put("type", "8");
+                ArmsUtils.showTagView(map);
+                break;
+        }
     }
 
     private String convertStatusCode(HttpException httpException) {

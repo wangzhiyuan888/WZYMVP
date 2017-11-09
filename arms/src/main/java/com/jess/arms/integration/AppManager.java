@@ -23,6 +23,7 @@ import android.os.Message;
 import android.support.design.widget.Snackbar;
 import android.view.View;
 
+import com.jess.arms.R;
 import com.jess.arms.base.BaseActivity;
 import com.jess.arms.base.delegate.AppLifecycles;
 
@@ -64,6 +65,7 @@ public final class AppManager {
     public static final int APP_EXIT = 5003;
     public static final int ACTIVITY_MESSAGE = 5004;
     public static final int KILL_EXCEPT_CLASS = 5005;
+    public static final int ERROR_MESSAGE = 5006;
     private Application mApplication;
     //管理所有activity
     public List<Activity> mActivityList;
@@ -110,6 +112,11 @@ public final class AppManager {
                 if (message.obj == null)
                     break;
                 killActivityExceptByClass((Class<?>)message.obj);
+                break;
+            case ERROR_MESSAGE:
+                if (message.obj == null)
+                    break;
+                showTagView(message.obj);
                 break;
             default:
                 Timber.tag(TAG).w("The message.what not match");
@@ -490,5 +497,15 @@ public final class AppManager {
             }
 
         }
+    }
+
+    public void showTagView(Object object){
+        if (mActivityList == null) {
+            Timber.tag(TAG).w("mActivityList == null when killActivity");
+            return;
+        }
+
+        ((BaseActivity)getCurrentActivity()).showTypeView(object);
+
     }
 }

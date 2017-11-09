@@ -16,22 +16,31 @@
 package com.jess.arms.base;
 
 import android.os.Bundle;
+import android.support.annotation.DrawableRes;
+import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
+import android.view.animation.AnimationUtils;
+import android.widget.TextView;
 
+import com.jess.arms.R;
 import com.jess.arms.base.delegate.IFragment;
 import com.jess.arms.integration.lifecycle.FragmentLifecycleable;
 import com.jess.arms.mvp.IPresenter;
 import com.trello.rxlifecycle2.android.FragmentEvent;
 
+import java.util.Map;
+
 import javax.inject.Inject;
 
 import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.Subject;
+import timber.log.Timber;
 
 /**
  * ================================================
@@ -49,6 +58,35 @@ public abstract class BaseFragment<P extends IPresenter> extends Fragment implem
     @Inject
     protected P mPresenter;
 
+    /**
+     * 视图类型,内容,加载中,没有数据,网络异常
+     */
+    enum ViewType {
+        CONTENT, PROGRESS, EMPTY, ERROR
+    }
+
+    // 当前视图类型
+    private ViewType mCurrentViewType = ViewType.CONTENT;
+    private String mEmptyMessage = "没有数据";
+    private int mEmptyMessageIcon = R.drawable.ic_order_empty;
+
+    private View mProgressContainer;//进度区域
+    private View mContentContainer;//内容区域
+    private View mContentView;//内容视图
+    private View mEmptyView;//空区域
+    private View mNetWorkErrorView;//网络异常视图
+
+    private View mTempView;//临时保存创建的内容,在onViewCreated之后设置进去
+
+    private ViewStub mProgressStub;
+    private ViewStub mEmptyStub;
+    private ViewStub mNetWorkErrorStub;
+
+    private View.OnClickListener mEmptyViewClickListener;
+    private View.OnClickListener mNetWorkErrorViewClickListener;
+    /** 视图是否已经创建完成 */
+    protected boolean mIsViewCreated = false;
+
 
     @NonNull
     @Override
@@ -65,7 +103,64 @@ public abstract class BaseFragment<P extends IPresenter> extends Fragment implem
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return initView(inflater, container, savedInstanceState);
+        mTempView = initView(inflater, container, savedInstanceState);
+        return inflater.inflate(getFragmentLayoutResourceId(), container, false);
+    }
+
+    /**
+     * {@link Fragment} 布局ID
+     * 如果需要更改Fragment布局文件需要重写此方法,布局文件结构必须和R.layout.fragment_progress一致
+     *
+     * @return @LayoutRes(eg R.layout.fragment_progress)
+     */
+    public @LayoutRes
+    int getFragmentLayoutResourceId() {
+        return R.layout.fragment_progress;
+    }
+
+    /**
+     * Attach to mTempView once the mTempView hierarchy has been created.
+     */
+    @Override public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        ensureContent();
+        setContentView(mTempView);
+        mIsViewCreated = true;
+        if (mCurrentViewType != ViewType.CONTENT) {
+            switchView(getCurrentView(), mContentView, false);
+        }
+    }
+
+    /**
+     * Detach from mTempView.
+     */
+    @Override public void onDestroyView() {
+        mProgressContainer = mContentContainer = mContentView = mEmptyView = mNetWorkErrorView = null;
+        mProgressStub = mEmptyStub = mNetWorkErrorStub = null;
+        super.onDestroyView();
+    }
+
+    /**
+     * Return content mTempView or null if the content mTempView has not been initialized.
+     *
+     * @return content mTempView or null
+     * @see #setContentView(View)
+     */
+    public View getContentView() {
+        return mContentView;
+    }
+
+    /**
+     * Set the content content from a layout resource.
+     *
+     * @param layoutResId Resource ID to be inflated.
+     * @see #setContentView(View)
+     * @see #getContentView()
+     */
+    public void setContentView(@LayoutRes int layoutResId) {
+        LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
+        View contentView = layoutInflater.inflate(layoutResId, null);
+        setContentView(contentView);
     }
 
 
@@ -85,6 +180,286 @@ public abstract class BaseFragment<P extends IPresenter> extends Fragment implem
     @Override
     public boolean useEventBus() {
         return true;
+    }
+
+    /**
+     * Set the content mTempView to an explicit mTempView. If the content mTempView was installed
+     * earlier,
+     * the content will be replaced with a new mTempView.
+     *
+     * @param view The desired content to display. Value can't be null.
+     */
+    public void setContentView(View view) {
+        ensureContent();
+        if (view == null) {
+            throw new IllegalArgumentException("Content mTempView can't be null");
+        }
+        if (mContentContainer instanceof ViewGroup) {
+            ViewGroup contentContainer = (ViewGroup) mContentContainer;
+            if (mContentView == null) {
+                contentContainer.addView(view);
+            } else {
+                int index = contentContainer.indexOfChild(mContentView);
+                // replace content mTempView
+                contentContainer.removeView(mContentView);
+                contentContainer.addView(view, index);
+            }
+            mContentView = view;
+        } else {
+            throw new IllegalStateException("Can't be used with a custom content mTempView");
+        }
+    }
+
+    /**
+     * 显示进度
+     */
+    public void showProgress() {
+        if (mCurrentViewType == ViewType.PROGRESS) return;
+        if (mIsViewCreated) {
+            View hideView = getCurrentView();
+            View showView = getProgressContainer();
+            switchView(showView, hideView, false);
+        }
+        mCurrentViewType = ViewType.PROGRESS;
+    }
+
+    /**
+     * 显示内容
+     */
+    public void showContent() {
+        if (mCurrentViewType == ViewType.CONTENT) return;
+        if (mIsViewCreated) {
+            View hideView = getCurrentView();
+            View showView = mContentView;
+            switchView(showView, hideView, false);
+        }
+        mCurrentViewType = ViewType.CONTENT;
+    }
+
+    /**
+     * 显示空视图
+     */
+    public void showEmpty() {
+        if (mCurrentViewType == ViewType.EMPTY) return;
+        if (mIsViewCreated) {
+            View hideView = getCurrentView();
+            View showView = getEmptyView();
+            switchView(showView, hideView, false);
+        }
+        mCurrentViewType = ViewType.EMPTY;
+    }
+
+    /**
+     * 显示网络错误
+     */
+    public void showNetWorkError() {
+        if (mCurrentViewType == ViewType.ERROR) return;
+        if (mIsViewCreated) {
+            View hideView = getCurrentView();
+            View showView = getNetWorkErrorView();
+            switchView(showView, hideView, false);
+        }
+        mCurrentViewType = ViewType.ERROR;
+    }
+
+    /**
+     * 设置空视图点击事件
+     *
+     * @param emptyViewClickListener
+     */
+    public void setEmptyViewClickListener(View.OnClickListener emptyViewClickListener) {
+        if (mEmptyView != null) {
+            mEmptyView.setOnClickListener(emptyViewClickListener);
+        }
+        mEmptyViewClickListener = emptyViewClickListener;
+    }
+
+    /**
+     * 设置网络异常点击事件
+     *
+     * @param netWorkErrorViewClickListener
+     */
+    public void setNetWorkErrorViewClickListener(View.OnClickListener netWorkErrorViewClickListener) {
+        if (mNetWorkErrorView != null) {
+            mNetWorkErrorView.setOnClickListener(netWorkErrorViewClickListener);
+        }
+        mNetWorkErrorViewClickListener = netWorkErrorViewClickListener;
+    }
+
+    public View getEmptyView() {
+        if (mEmptyView == null) {
+            mEmptyView = mEmptyStub.inflate();
+            mEmptyView.setOnClickListener(mEmptyViewClickListener);
+            this.setEmptyMessage(mEmptyMessage, mEmptyMessageIcon);
+        }
+        return mEmptyView;
+    }
+
+    /**
+     * 设置空数据视图
+     *
+     * @param message 消息名称
+     * @param icon 图标
+     */
+    public void setEmptyMessage(String message, @DrawableRes int icon) {
+        this.mEmptyMessage = message;
+        this.mEmptyMessageIcon = icon;
+        if (!mIsViewCreated || mEmptyView == null) return;
+        TextView textView = (TextView) mEmptyView.findViewById(R.id.data_empty_text);
+        if (textView == null) {
+            Timber.e(new RuntimeException("空数据视图必须包含id为R.id.data_empty_text的TextView"));
+            return;
+        }
+        textView.setText(message);
+        textView.setCompoundDrawablesWithIntrinsicBounds(0, icon, 0, 0);
+    }
+
+    private View getProgressContainer() {
+        if (mProgressContainer == null) mProgressContainer = mProgressStub.inflate();
+        return mProgressContainer;
+    }
+
+    private View getNetWorkErrorView() {
+        if (mNetWorkErrorView == null) {
+            mNetWorkErrorView = mNetWorkErrorStub.inflate();
+            mNetWorkErrorView.setOnClickListener(mNetWorkErrorViewClickListener);
+        }
+        return mNetWorkErrorView;
+    }
+
+    /**
+     * Initialization views.
+     */
+    private void ensureContent() {
+        if (mContentContainer != null) {// 已经初始化
+            return;
+        }
+        View root = getView();
+        if (root == null) {
+            throw new IllegalStateException("Content mTempView not yet created");
+        }
+
+        // 内容
+        mContentContainer = root.findViewById(R.id.content_container);
+        if (mContentContainer == null) {
+            throw new RuntimeException(
+                    "Your content must have a ViewGroup whose id attribute is 'R.id.content_container'");
+        }
+
+        // 加载进度
+        mProgressStub = (ViewStub) root.findViewById(R.id.progress_stub);
+        if (mProgressStub == null) {
+            throw new RuntimeException(
+                    "Your content must have a ViewStub whose id attribute is 'R.id.progress_stub'");
+        }
+
+        // 空视图
+        mEmptyStub = (ViewStub) root.findViewById(R.id.empty_stub);
+        if (mEmptyStub == null) {
+            throw new RuntimeException(
+                    "Your content must have a ViewStub whose id attribute is 'R.id.empty_stub'");
+        }
+
+        // 网络异常
+        mNetWorkErrorStub = (ViewStub) root.findViewById(R.id.network_error_stub);
+        if (mNetWorkErrorStub == null) {
+            throw new RuntimeException(
+                    "Your content must have a ViewStub whose id attribute is 'R.id.network_error_stub'");
+        }
+    }
+
+    /**
+     * 获取当前显示的View
+     *
+     * @return 当前显示的View
+     */
+    private View getCurrentView() {
+        View view = null;
+        switch (mCurrentViewType) {
+            case PROGRESS: {
+                view = getProgressContainer();
+                break;
+            }
+            case CONTENT: {
+                view = mContentView;
+                break;
+            }
+            case EMPTY: {
+                view = getEmptyView();
+                break;
+            }
+            case ERROR: {
+                view = getNetWorkErrorView();
+                break;
+            }
+        }
+        return view;
+    }
+
+    /**
+     * 切换当前显示的视图
+     *
+     * @param shownView 需要显示的View
+     * @param hiddenView 需要隐藏的View
+     * @param animate 动画?
+     */
+    private void switchView(View shownView, View hiddenView, boolean animate) {
+        if (animate) {
+            shownView.startAnimation(
+                    AnimationUtils.loadAnimation(this.getActivity(), android.R.anim.fade_in));
+            hiddenView.startAnimation(
+                    AnimationUtils.loadAnimation(this.getActivity(), android.R.anim.fade_out));
+        } else {
+            shownView.clearAnimation();
+            hiddenView.clearAnimation();
+        }
+
+        shownView.setVisibility(View.VISIBLE);
+        hiddenView.setVisibility(View.GONE);
+    }
+
+    public void showTypeView(Object object){
+        Map<String,Object> map = (Map<String, Object>) object;
+        if(map != null && "1".equals(map.get("type"))){
+            //网络不可用
+            showNetWorkError();
+
+        }if(map != null && "2".equals(map.get("type"))){
+            //请求网络超时
+            showNetWorkError();
+
+        }if(map != null && "3".equals(map.get("type"))){
+            //数据解析错误
+            setEmptyMessage("数据解析错误", R.drawable.ic_order_empty);
+            showEmpty();
+
+        }if(map != null && "4".equals(map.get("type"))){
+            //服务器发生错误
+            setEmptyMessage("服务器发生错误", R.drawable.ic_order_empty);
+            showEmpty();
+
+        }if(map != null && "5".equals(map.get("type"))){
+            //请求地址不存在
+            setEmptyMessage("请求地址不存在", R.drawable.ic_order_empty);
+            showEmpty();
+
+        }if(map != null && "6".equals(map.get("type"))){
+            //请求被服务器拒绝
+            setEmptyMessage("请求被服务器拒绝", R.drawable.ic_order_empty);
+            showEmpty();
+
+        }if(map != null && "7".equals(map.get("type"))){
+            //请求被重定向到其他页面
+            setEmptyMessage("请求被重定向到其他页面", R.drawable.ic_order_empty);
+            showEmpty();
+
+        }if(map != null && "8".equals(map.get("type"))){
+            //未知错误
+            setEmptyMessage("未知错误", R.drawable.ic_order_empty);
+            showEmpty();
+
+        }
+
     }
 
 }

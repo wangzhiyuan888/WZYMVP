@@ -68,6 +68,7 @@ dependencies {
     implementation rootProject.ext.dependencies["paginate"]
     //arms
     implementation project(':arms')
+    implementation project(':bottomtabbar')
 //    implementation 'me.jessyan:arms:2.2.3'
     //test
     testImplementation rootProject.ext.dependencies["junit"]

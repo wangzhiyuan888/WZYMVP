@@ -4,4 +4,8 @@
     <color name="colorPrimaryDark">#3FA862</color>
     <color name="colorAccent">#FF4081</color>
     <color name="white">#FFFFFF</color>
+
+    <!-- 底部导航条颜色-->
+    <color name="tab_unchecked">#555555</color>
+    <color name="tab_checked">#5aa301</color>
 </resources>

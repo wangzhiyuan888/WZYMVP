@@ -50,6 +50,7 @@ import static com.jess.arms.integration.AppManager.KILL_EXCEPT_CLASS;
 import static com.jess.arms.integration.AppManager.SHOW_SNACKBAR;
 import static com.jess.arms.integration.AppManager.START_ACTIVITY;
 import static com.jess.arms.integration.AppManager.ACTIVITY_MESSAGE;
+import static com.jess.arms.integration.AppManager.ERROR_MESSAGE;
 
 /**
  * ================================================
@@ -460,6 +461,14 @@ public class ArmsUtils {
         Message message = new Message();
         message.what = KILL_EXCEPT_CLASS;
         message.obj = activityClass;
+        EventBus.getDefault().post(message, APPMANAGER_MESSAGE);
+
+    }
+
+    public static void showTagView(Object object){
+        Message message = new Message();
+        message.what = ERROR_MESSAGE;
+        message.obj = object;
         EventBus.getDefault().post(message, APPMANAGER_MESSAGE);
 
     }
