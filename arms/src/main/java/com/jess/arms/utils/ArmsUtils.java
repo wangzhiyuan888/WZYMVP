@@ -405,10 +405,11 @@ public class ArmsUtils {
 
 
     /**
-     * 配置 recycleview
+     * 配置 RecyclerView
      *
      * @param recyclerView
      * @param layoutManager
+     * @deprecated Use {@link #configRecyclerView(RecyclerView, RecyclerView.LayoutManager)} instead
      */
     public static void configRecycleView(final RecyclerView recyclerView
             , RecyclerView.LayoutManager layoutManager) {
@@ -417,6 +418,20 @@ public class ArmsUtils {
         recyclerView.setHasFixedSize(true);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
     }
+
+    /**
+     * 配置 RecyclerView
+     *
+     * @param recyclerView
+     * @param layoutManager
+     */
+      public static void configRecyclerView(final RecyclerView recyclerView
+             , RecyclerView.LayoutManager layoutManager) {
+          recyclerView.setLayoutManager(layoutManager);
+          //如果可以确定每个item的高度是固定的，设置这个选项可以提高性能
+          recyclerView.setHasFixedSize(true);
+          recyclerView.setItemAnimator(new DefaultItemAnimator());
+       }
 
     /**
      * 远程遥控 {@link AppManager#killAll()}
@@ -437,6 +452,7 @@ public class ArmsUtils {
     }
 
     public static AppComponent obtainAppComponentFromContext(Context context) {
+        Preconditions.checkNotNull(context, "%s cannot be null", Context.class.getName());
         Preconditions.checkState(context.getApplicationContext() instanceof App, "Application does not implements App");
         return ((App) context.getApplicationContext()).getAppComponent();
     }

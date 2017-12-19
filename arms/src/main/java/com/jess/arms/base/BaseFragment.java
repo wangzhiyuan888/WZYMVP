@@ -30,8 +30,11 @@ import android.widget.TextView;
 
 import com.jess.arms.R;
 import com.jess.arms.base.delegate.IFragment;
+import com.jess.arms.integration.cache.Cache;
+import com.jess.arms.integration.cache.CacheType;
 import com.jess.arms.integration.lifecycle.FragmentLifecycleable;
 import com.jess.arms.mvp.IPresenter;
+import com.jess.arms.utils.ArmsUtils;
 import com.trello.rxlifecycle2.android.FragmentEvent;
 
 import java.util.Map;
@@ -55,8 +58,18 @@ import timber.log.Timber;
 public abstract class BaseFragment<P extends IPresenter> extends Fragment implements IFragment, FragmentLifecycleable {
     protected final String TAG = this.getClass().getSimpleName();
     private final BehaviorSubject<FragmentEvent> mLifecycleSubject = BehaviorSubject.create();
+    private Cache<String, Object> mCache;
     @Inject
     protected P mPresenter;
+
+    @NonNull
+    @Override
+    public synchronized Cache<String, Object> provideCache() {
+        if (mCache == null) {
+            mCache = ArmsUtils.obtainAppComponentFromContext(getActivity()).cacheFactory().build(CacheType.FRAGMENT_CACHE);
+        }
+        return mCache;
+    }
 
     /**
      * 视图类型,内容,加载中,没有数据,网络异常
@@ -92,11 +105,6 @@ public abstract class BaseFragment<P extends IPresenter> extends Fragment implem
     @Override
     public final Subject<FragmentEvent> provideLifecycleSubject() {
         return mLifecycleSubject;
-    }
-
-    public BaseFragment() {
-        //必须确保在Fragment实例化时setArguments()
-        setArguments(new Bundle());
     }
 
 

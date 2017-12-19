@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion rootProject.ext.android["compileSdkVersion"]
-    buildToolsVersion rootProject.ext.android["buildToolsVersion"]
+    buildToolsVersion '26.0.2'
     useLibrary 'org.apache.http.legacy'
 
     compileOptions {
@@ -69,7 +69,10 @@ dependencies {
     //arms
     implementation project(':arms')
     implementation project(':bottomtabbar')
-//    implementation 'me.jessyan:arms:2.2.3'
+
+    // 下拉刷新
+    implementation rootProject.ext.dependencies["smartRefreshLayout"]
+    //    implementation 'me.jessyan:arms:2.2.3'
     //test
     testImplementation rootProject.ext.dependencies["junit"]
     debugImplementation rootProject.ext.dependencies["canary-debug"]

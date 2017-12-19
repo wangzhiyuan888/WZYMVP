@@ -23,6 +23,8 @@ import com.jess.arms.di.module.GlobalConfigModule;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import java.util.Set;
+
 
 /**
  * ================================================
@@ -79,7 +81,7 @@ public class LruCache<K, V> implements Cache<K, V> {
     /**
      * 当缓存中有被驱逐的条目时,会回调此方法,默认空实现,子类可以重写这个方法
      *
-     * @param key  被驱逐条目的 {@code key}
+     * @param key   被驱逐条目的 {@code key}
      * @param value 被驱逐条目的 {@code value}
      */
     protected void onItemEvicted(K key, V value) {
@@ -111,6 +113,17 @@ public class LruCache<K, V> implements Cache<K, V> {
     public synchronized boolean containsKey(K key) {
         return cache.containsKey(key);
     }
+
+    /**
+     * 返回当前缓存中含有的所有 {@code key}
+     *
+     * @return
+     */
+    @Override
+    public Set<K> keySet() {
+        return cache.keySet();
+    }
+
 
     /**
      * 返回这个 {@code key} 在缓存中对应的 {@code value}, 如果返回 {@code null} 说明这个 {@code key} 没有对应的 {@code value}

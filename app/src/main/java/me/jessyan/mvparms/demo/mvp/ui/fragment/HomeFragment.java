@@ -15,6 +15,9 @@ import com.jess.arms.base.DefaultAdapter;
 import com.jess.arms.di.component.AppComponent;
 import com.jess.arms.utils.ArmsUtils;
 import com.paginate.Paginate;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnLoadmoreListener;
+import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 
 import javax.inject.Inject;
@@ -31,21 +34,18 @@ import timber.log.Timber;
 import static com.jess.arms.utils.Preconditions.checkNotNull;
 
 
-public class HomeFragment extends BaseFragment<HomePresenter> implements HomeContract.View, SwipeRefreshLayout.OnRefreshListener  {
+public class HomeFragment extends BaseFragment<HomePresenter> implements HomeContract.View {
 
     @BindView(R.id.recyclerView)
     RecyclerView mRecyclerView;
-    @BindView(R.id.swipeRefreshLayout)
-    SwipeRefreshLayout mSwipeRefreshLayout;
+    @BindView(R.id.refreshLayout )
+    RefreshLayout mRefreshLayout ;
     @Inject
     RxPermissions mRxPermissions;
     @Inject
     RecyclerView.LayoutManager mLayoutManager;
     @Inject
     RecyclerView.Adapter mAdapter;
-
-    private Paginate mPaginate;
-    private boolean isLoadingMore;
 
 
     public static HomeFragment newInstance() {
@@ -70,9 +70,8 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements HomeCon
 
     @Override
     public void initData(Bundle savedInstanceState) {
-        initRecycleView();
+        initRecyclerView();
         mRecyclerView.setAdapter(mAdapter);
-        initPaginate();
         mPresenter.requestUsers(true);//打开 App 时自动加载列表
 
     }
@@ -82,30 +81,25 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements HomeCon
 
     }
 
-    @Override
-    public void onRefresh() {
-        mPresenter.requestUsers(true);
-    }
-
     /**
-     * 初始化RecycleView
+     * 初始化RecyclerView
      */
-    private void initRecycleView() {
-        mSwipeRefreshLayout.setOnRefreshListener(this);
-        ArmsUtils.configRecycleView(mRecyclerView, mLayoutManager);
+    private void initRecyclerView() {
+        mRefreshLayout.setOnRefreshListener(onRefreshListener);
+        mRefreshLayout.setOnLoadmoreListener(onLoadmoreListener);
+        ArmsUtils.configRecyclerView(mRecyclerView, mLayoutManager);
     }
 
 
     @Override
     public void showLoading() {
         Timber.tag(TAG).w("showLoading");
-        mSwipeRefreshLayout.setRefreshing(true);
     }
 
     @Override
     public void hideLoading() {
         Timber.tag(TAG).w("hideLoading");
-        mSwipeRefreshLayout.setRefreshing(false);
+        mRefreshLayout.finishRefresh();//传入false表示刷新失败
     }
 
     @Override
@@ -127,7 +121,6 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements HomeCon
      */
     @Override
     public void startLoadMore() {
-        isLoadingMore = true;
     }
 
     /**
@@ -135,7 +128,7 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements HomeCon
      */
     @Override
     public void endLoadMore() {
-        isLoadingMore = false;
+        mRefreshLayout.finishLoadmore();//传入false表示加载失败
     }
 
     @Override
@@ -148,41 +141,26 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements HomeCon
         return mRxPermissions;
     }
 
-    /**
-     * 初始化Paginate,用于加载更多
-     */
-    private void initPaginate() {
-        if (mPaginate == null) {
-            Paginate.Callbacks callbacks = new Paginate.Callbacks() {
-                @Override
-                public void onLoadMore() {
-                    mPresenter.requestUsers(false);
-                }
-
-                @Override
-                public boolean isLoading() {
-                    return isLoadingMore;
-                }
-
-                @Override
-                public boolean hasLoadedAllItems() {
-                    return false;
-                }
-            };
-
-            mPaginate = Paginate.with(mRecyclerView, callbacks)
-                    .setLoadingTriggerThreshold(0)
-                    .build();
-            mPaginate.setHasMoreDataToLoad(false);
-        }
-    }
-
     @Override
     public void onDestroy() {
         DefaultAdapter.releaseAllHolder(mRecyclerView);//super.onDestroy()之后会unbind,所有view被置为null,所以必须在之前调用
         super.onDestroy();
         this.mRxPermissions = null;
-        this.mPaginate = null;
     }
+
+    public OnRefreshListener onRefreshListener = new OnRefreshListener() {
+        @Override
+        public void onRefresh(RefreshLayout refreshlayout) {
+            mPresenter.requestUsers(true);
+        }
+    };
+
+    public OnLoadmoreListener onLoadmoreListener = new OnLoadmoreListener() {
+        @Override
+        public void onLoadmore(RefreshLayout refreshlayout) {
+            mPresenter.requestUsers(false);
+
+        }
+    };
 
 }

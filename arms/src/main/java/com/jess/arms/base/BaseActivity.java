@@ -17,10 +17,8 @@ package com.jess.arms.base;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.DrawableRes;
-import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -34,8 +32,11 @@ import android.widget.TextView;
 
 import com.jess.arms.R;
 import com.jess.arms.base.delegate.IActivity;
+import com.jess.arms.integration.cache.Cache;
+import com.jess.arms.integration.cache.CacheType;
 import com.jess.arms.integration.lifecycle.ActivityLifecycleable;
 import com.jess.arms.mvp.IPresenter;
+import com.jess.arms.utils.ArmsUtils;
 import com.trello.rxlifecycle2.android.ActivityEvent;
 
 import java.util.Map;
@@ -62,10 +63,20 @@ import static com.jess.arms.utils.ThirdViewUtil.convertAutoView;
  */
 public abstract class BaseActivity<P extends IPresenter> extends AppCompatActivity implements IActivity, ActivityLifecycleable {
     protected final String TAG = this.getClass().getSimpleName();
-    private Unbinder mUnbinder;
     private final BehaviorSubject<ActivityEvent> mLifecycleSubject = BehaviorSubject.create();
+    private Cache<String, Object> mCache;
+    private Unbinder mUnbinder;
     @Inject
     protected P mPresenter;
+
+    @NonNull
+    @Override
+    public synchronized Cache<String, Object> provideCache() {
+        if (mCache == null) {
+            mCache = ArmsUtils.obtainAppComponentFromContext(this).cacheFactory().build(CacheType.ACTIVITY_CACHE);
+        }
+        return mCache;
+     }
 
     /**
      * 视图类型,内容,加载中,没有数据,网络异常
