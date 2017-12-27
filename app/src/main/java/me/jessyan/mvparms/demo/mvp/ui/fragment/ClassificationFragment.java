@@ -1,5 +1,6 @@
 package me.jessyan.mvparms.demo.mvp.ui.fragment;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -17,11 +18,20 @@ import me.jessyan.mvparms.demo.mvp.contract.ClassificationContract;
 import me.jessyan.mvparms.demo.mvp.presenter.ClassificationPresenter;
 
 import me.jessyan.mvparms.demo.R;
+import me.jessyan.mvparms.demo.mvp.ui.activity.MainActivity;
 
 import static com.jess.arms.utils.Preconditions.checkNotNull;
 
 
 public class ClassificationFragment extends BaseFragment<ClassificationPresenter> implements ClassificationContract.View {
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if(context instanceof MainActivity){
+            ((MainActivity)context).setFunctionsForFragment(getTag());
+        }
+    }
 
 
     public static ClassificationFragment newInstance() {

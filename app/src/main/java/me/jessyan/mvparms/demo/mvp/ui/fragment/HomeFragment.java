@@ -1,20 +1,19 @@
 package me.jessyan.mvparms.demo.mvp.ui.fragment;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
-import com.jess.arms.base.BaseFragment;
 import com.jess.arms.base.DefaultAdapter;
+import com.jess.arms.base.struct.FunctionException;
 import com.jess.arms.di.component.AppComponent;
 import com.jess.arms.utils.ArmsUtils;
-import com.paginate.Paginate;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.listener.OnLoadmoreListener;
 import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
@@ -23,15 +22,16 @@ import com.tbruyelle.rxpermissions2.RxPermissions;
 import javax.inject.Inject;
 
 import butterknife.BindView;
+import com.jess.arms.base.BaseFragment;
 import me.jessyan.mvparms.demo.di.component.DaggerHomeComponent;
 import me.jessyan.mvparms.demo.di.module.HomeModule;
 import me.jessyan.mvparms.demo.mvp.contract.HomeContract;
 import me.jessyan.mvparms.demo.mvp.presenter.HomePresenter;
 
 import me.jessyan.mvparms.demo.R;
+import me.jessyan.mvparms.demo.mvp.ui.activity.MainActivity;
+import me.jessyan.mvparms.demo.mvp.ui.adapter.UserAdapter;
 import timber.log.Timber;
-
-import static com.jess.arms.utils.Preconditions.checkNotNull;
 
 
 public class HomeFragment extends BaseFragment<HomePresenter> implements HomeContract.View {
@@ -46,6 +46,14 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements HomeCon
     RecyclerView.LayoutManager mLayoutManager;
     @Inject
     RecyclerView.Adapter mAdapter;
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if(context instanceof MainActivity){
+            ((MainActivity)context).setFunctionsForFragment(getTag());
+        }
+    }
 
 
     public static HomeFragment newInstance() {
@@ -74,6 +82,20 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements HomeCon
         mRecyclerView.setAdapter(mAdapter);
         mPresenter.requestUsers(true);//打开 App 时自动加载列表
 
+        //点击事件监听
+        ((UserAdapter)mAdapter).setOnItemClickListener(new DefaultAdapter.OnRecyclerViewItemClickListener() {
+            @Override
+            public void onItemClick(View view, int viewType, Object data, int position) {
+                String str = null;
+                try {
+                    str = mFunctionsManager.invokeFunc(INTERFACE, "I Konw!", String.class);
+                    Toast.makeText(getContext(), "str: "+str, Toast.LENGTH_LONG).show();
+                } catch (FunctionException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        });
     }
 
     @Override

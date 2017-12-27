@@ -4,11 +4,14 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentManager;
 import android.util.Log;
 
 import com.hjm.bottomtabbar.BottomTabBar;
 import com.jess.arms.base.BaseActivity;
 import com.jess.arms.base.BaseFragment;
+import com.jess.arms.base.struct.FunctionWithParamAndResult;
+import com.jess.arms.base.struct.FunctionsManager;
 import com.jess.arms.di.component.AppComponent;
 import com.jess.arms.utils.ArmsUtils;
 
@@ -110,6 +113,23 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainCon
     public void goToFragmentShowTypeView(Object object){
         ((BaseFragment)mBottomBar.getmTabHost().getWantFragment(mBottomBar.getmTabHost().getCurrentTab())).showTypeView(object);
 
+    }
+
+    /**
+     * Fragment 与Activity间的互相通讯
+     * @param tag
+     */
+    public void setFunctionsForFragment(String tag){
+        FragmentManager fm = getSupportFragmentManager();
+        BaseFragment fragment = (BaseFragment)fm.findFragmentByTag(tag);
+        FunctionsManager fmager = FunctionsManager.getInstance();
+        fragment.setFunctionsManager(fmager.addFunction(new FunctionWithParamAndResult<String, String>(HomeFragment.INTERFACE) {
+            @Override
+            public String function(String data) {
+                return "WZY I Love You,"+data;
+
+            }
+        }));
     }
 
 

@@ -30,6 +30,7 @@ import android.widget.TextView;
 
 import com.jess.arms.R;
 import com.jess.arms.base.delegate.IFragment;
+import com.jess.arms.base.struct.FunctionsManager;
 import com.jess.arms.integration.cache.Cache;
 import com.jess.arms.integration.cache.CacheType;
 import com.jess.arms.integration.lifecycle.FragmentLifecycleable;
@@ -61,6 +62,13 @@ public abstract class BaseFragment<P extends IPresenter> extends Fragment implem
     private Cache<String, Object> mCache;
     @Inject
     protected P mPresenter;
+
+    protected FunctionsManager mFunctionsManager;
+    public static final String INTERFACE = BaseFragment.class.getName();
+
+    public void setFunctionsManager(FunctionsManager functionsManager) {
+        this.mFunctionsManager = functionsManager;
+    }
 
     @NonNull
     @Override
