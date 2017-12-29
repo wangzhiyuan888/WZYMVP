@@ -1,4 +1,4 @@
-# MVPArms 
+﻿# MVPArms 
 [ ![Bintray](https://img.shields.io/badge/bintray-v2.3.1-brightgreen.svg) ](https://bintray.com/jessyancoding/maven/MVPArms/2.3.1/link)
 [ ![Build Status](https://travis-ci.org/JessYanCoding/MVPArms.svg?branch=master) ](https://travis-ci.org/JessYanCoding/MVPArms)
 [ ![API](https://img.shields.io/badge/API-15%2B-blue.svg?style=flat-square) ](https://developer.android.com/about/versions/android-4.0.3.html)
@@ -59,4 +59,41 @@
 16. [`Glide`](https://github.com/bumptech/glide)
 17. [`LeakCanary`](https://github.com/square/leakcanary)
 
-##  更新日期：2017/12/01
+Fragment 
+ Two Fragments should never communicate directly
+ android2.3出现Fragemnt， 2.3后平板越来越多，为了屏幕适配，谷歌开发了Fragment，
+Fragment 好处
+ 1.Fragment优势是系统开销小，碎片化
+ 2.FragmentManager，可以方便管理Fragment
+ 3.Fragment界面耦合度低
+
+常见的通讯方式
+1.EventBus， rxBus
+网精油一样，
+	优点：方便，快捷，简单
+	缺点
+	  1.放射，性能大打折扣，效率低
+	  2.代码维护困难
+	  3.数据无法返回，单向传递
+
+2.handler
+	优点: 可以解决问题
+
+	缺点：1.耦合 2. 无法获取activity返回结果 3. 很容易内存泄漏
+
+3.static
+	静态变量，很占用内存，android分配给该app的内存只有63M左右，static太多，导致内存严重被占用。
+
+3.广播
+  广播是一个非常庞大的通讯系统，它出现的目的是监听系统级的方法，大多数情况下充电、重启、联网、WIFI连接、蓝牙连接、短信， 单元发送元，多处接收。
+	缺点：
+	1.新能差，延迟
+	2.通信体系，重，一个发生，多个接收
+	3.传播的数据有限
+	4.代码冗余
+
+
+4.接口
+	优点：简单，效率高，方便，解耦合
+	缺点：
+	  1.代码冗余，每个需要通信的Fragment 都必须定义自己独一无二的接口
