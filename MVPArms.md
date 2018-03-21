@@ -1,24 +1,4 @@
-# MVPArms 
-[ ![Bintray](https://img.shields.io/badge/bintray-v2.3.1-brightgreen.svg) ](https://bintray.com/jessyancoding/maven/MVPArms/2.3.1/link)
-[ ![Build Status](https://travis-ci.org/JessYanCoding/MVPArms.svg?branch=master) ](https://travis-ci.org/JessYanCoding/MVPArms)
-[ ![API](https://img.shields.io/badge/API-15%2B-blue.svg?style=flat-square) ](https://developer.android.com/about/versions/android-4.0.3.html)
-[ ![License](http://img.shields.io/badge/License-Apache%202.0-blue.svg?style=flat-square) ](http://www.apache.org/licenses/LICENSE-2.0)
-[ ![QQGroup](https://img.shields.io/badge/QQ群-301733278-ff69b4.svg) ](https://shang.qq.com/wpa/qunwpa?idkey=1a5dc5e9b2e40a780522f46877ba243eeb64405d42398643d544d3eec6624917)
-
-## 一个整合了大量主流开源项目的 Android MVP 快速搭建框架
-
-## Usage
-> New Project (以下步骤太麻烦? 一键生成整个新项目, [开发中... 敬请期待!](http://androidstarters.com/))
->> 如果您想构建一个全新的项目,直接将整个项目 **clone** (或者下载) 下来,再将 **app** 作为主 **Module** (建议将 **arms Module** 删除,并使用 **Gradle** [远程依赖](https://github.com/JessYanCoding/MVPArms/wiki#1.1) 本框架,便于更新,删除前请务必先查看 [这里](https://github.com/JessYanCoding/MVPArms/wiki/Issues#2)),最后将项目包名改成自己的包名, **app Module** 包含可以直接使用的包结构,一个主流的 `MVP`+`Dagger2`+`Retrofit`+`RxJava` 框架就这样轻松的构建成功了,现在您再参考 **Mvp** 包下的 **UserActivity** 的格式,[使用 Template 一键生成 MVP , Dagger2 相关的所有类](https://github.com/JessYanCoding/MVPArmsTemplate),配合查阅 [Wiki 文档](https://github.com/JessYanCoding/MVPArms/wiki) 慢慢掌握本框架,看再多文章不如早点在项目中使用它,在实践中学习总是最快的
- 
-> Old Project
->> [老项目想引入此框架,可以参考 Wiki 文档 ,写的非常详细](https://github.com/JessYanCoding/MVPArms/wiki)
-
-## Wiki
-[详细使用方法及扩展功能,请参照 Wiki (**开发前必看!!!**)](https://github.com/JessYanCoding/MVPArms/wiki)
-
-<!--##The project used [In Progress]
-[Inspired by eyepetizer（灵感来源于开眼视频,开发中...）](https://github.com/JessYanCoding/WideEyes) -->
+本项目主要用到`MVP`+`Dagger2`+`Retrofit`+`RxJava`
 
 
 ## Notice
