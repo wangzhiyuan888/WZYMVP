@@ -24,11 +24,14 @@ import com.jess.arms.utils.ArmsUtils;
 
 import org.json.JSONException;
 
+import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import io.reactivex.exceptions.CompositeException;
 import me.jessyan.rxerrorhandler.handler.listener.ResponseErrorListener;
 import retrofit2.HttpException;
 import timber.log.Timber;
@@ -49,17 +52,8 @@ public class ResponseErrorListenerImpl implements ResponseErrorListener {
         Timber.tag("Catch-Error").w(t.getMessage());
         //这里不光是只能打印错误,还可以根据不同的错误作出不同的逻辑处理
         String msg = "未知错误";
-        if (t instanceof UnknownHostException) {
-            msg = "网络不可用";
-        } else if (t instanceof SocketTimeoutException) {
-            msg = "请求网络超时";
-        } else if (t instanceof HttpException) {
-            HttpException httpException = (HttpException) t;
-            msg = convertStatusCode(httpException);
-        } else if (t instanceof JsonParseException || t instanceof ParseException || t instanceof JSONException || t instanceof JsonIOException) {
-            msg = "数据解析错误";
-        }
-        ArmsUtils.snackbarText(msg);
+        msg = getErrorMessage(t, msg);
+        ArmsUtils.makeText(context,msg);
         Map<String,Object> map = new HashMap<>();
         switch (msg){
             case "网络不可用":
@@ -95,6 +89,26 @@ public class ResponseErrorListenerImpl implements ResponseErrorListener {
                 ArmsUtils.showTagView(map);
                 break;
         }
+    }
+
+    public String getErrorMessage(Throwable t, String msg){
+        String abc = "";
+        if (t instanceof CompositeException) {
+            List<Throwable> throwables = ((CompositeException)t).getExceptions();
+            for(Throwable tt:throwables){
+                msg = getErrorMessage(tt, msg);
+            }
+        }else if (t instanceof UnknownHostException) {
+            msg = "网络不可用";
+        } else if (t instanceof SocketTimeoutException) {
+            msg = "请求网络超时";
+        } else if (t instanceof HttpException) {
+            HttpException httpException = (HttpException) t;
+            msg = convertStatusCode(httpException);
+        } else if (t instanceof JsonParseException || t instanceof ParseException || t instanceof JSONException || t instanceof JsonIOException) {
+            msg = "数据解析错误";
+        }
+        return msg;
     }
 
     private String convertStatusCode(HttpException httpException) {

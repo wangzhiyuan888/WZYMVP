@@ -36,9 +36,14 @@ public interface IView {
     void showLoading();
 
     /**
-     * 隐藏加载
+     * 隐藏下拉加载
      */
-    void hideLoading();
+    void hideLoading(int lastId);
+
+    /**
+     * 隐藏上拉加载
+     */
+    void endLoadMore(int lastId);
 
     /**
      * 显示信息

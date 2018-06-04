@@ -70,6 +70,7 @@ dependencies {
     //arms
     implementation project(':arms')
     implementation project(':bottomtabbar')
+    implementation project(':LRecyclerview_library')
 
     // 下拉刷新
     implementation rootProject.ext.dependencies["smartRefreshLayout"]
@@ -77,6 +78,6 @@ dependencies {
     //test
     testImplementation rootProject.ext.dependencies["junit"]
     debugImplementation rootProject.ext.dependencies["canary-debug"]
-    releaseImplementation rootProject.ext.dependencies["canary-release"]
     testImplementation rootProject.ext.dependencies["canary-release"]
+    releaseImplementation rootProject.ext.dependencies["canary-release"]
 }

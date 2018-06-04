@@ -83,14 +83,19 @@ public class MeFragment extends BaseFragment<MePresenter> implements MeContract.
     }
 
     @Override
-    public void hideLoading() {
+    public void hideLoading(int lastId) {
+
+    }
+
+    @Override
+    public void endLoadMore(int lastId) {
 
     }
 
     @Override
     public void showMessage(@NonNull String message) {
         checkNotNull(message);
-        ArmsUtils.snackbarText(message);
+        ArmsUtils.makeText(getContext(),message);
     }
 
     @Override

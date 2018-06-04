@@ -83,14 +83,19 @@ public class FindFragment extends BaseFragment<FindPresenter> implements FindCon
     }
 
     @Override
-    public void hideLoading() {
+    public void hideLoading(int lastId) {
+
+    }
+
+    @Override
+    public void endLoadMore(int lastId) {
 
     }
 
     @Override
     public void showMessage(@NonNull String message) {
         checkNotNull(message);
-        ArmsUtils.snackbarText(message);
+        ArmsUtils.makeText(getContext(),message);
     }
 
     @Override

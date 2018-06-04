@@ -28,6 +28,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.view.animation.AnimationUtils;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import com.jess.arms.R;
@@ -69,6 +70,8 @@ public abstract class BaseActivity<P extends IPresenter> extends AppCompatActivi
     @Inject
     protected P mPresenter;
 
+    private FrameLayout tempLayout;
+
     @NonNull
     @Override
     public synchronized Cache<String, Object> provideCache() {
@@ -96,6 +99,7 @@ public abstract class BaseActivity<P extends IPresenter> extends AppCompatActivi
     private View mEmptyView;//空区域
     private View mNetWorkErrorView;//网络异常视图
 
+    private View mView;
     private View mTempView;//临时保存创建的内容,在onViewCreated之后设置进去
 
     private ViewStub mProgressStub;
@@ -109,6 +113,14 @@ public abstract class BaseActivity<P extends IPresenter> extends AppCompatActivi
     protected boolean mIsViewCreated = false;
 
     private boolean isHasFragment = false;
+
+    /**
+     * 默认布局
+     * @return
+     */
+    protected View initDefaultView(){
+        return LayoutInflater.from(this).inflate(R.layout.activity_commont_layout_type_1, null, false);
+    }
 
 
     @NonNull
@@ -127,7 +139,11 @@ public abstract class BaseActivity<P extends IPresenter> extends AppCompatActivi
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         try {
-            setContentView(getActivityLayoutResourceId());
+            mView = initDefaultView();
+            tempLayout = (FrameLayout) mView.findViewById(R.id.temp_layout);
+            tempLayout.removeAllViews();
+            tempLayout.addView(LayoutInflater.from(this).inflate(getActivityLayoutResourceId(), null, false));
+            setContentView(mView);
             ensureContent();
             mTempView = LayoutInflater.from(this).inflate(initView(savedInstanceState), null, false);
 

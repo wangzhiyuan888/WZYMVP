@@ -27,6 +27,7 @@ import me.jessyan.mvparms.demo.mvp.ui.fragment.FindFragment;
 import me.jessyan.mvparms.demo.mvp.ui.fragment.HomeFragment;
 import me.jessyan.mvparms.demo.mvp.ui.fragment.MeFragment;
 import me.jessyan.mvparms.demo.mvp.ui.fragment.ShoppingCartFragment;
+import timber.log.Timber;
 
 
 import static com.jess.arms.utils.Preconditions.checkNotNull;
@@ -76,7 +77,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainCon
                 .setOnTabChangeListener(new BottomTabBar.OnTabChangeListener() {
                     @Override
                     public void onTabChange(int position, String name) {
-                        Log.i("TGA", "位置：" + position + "      选项卡：" + name);
+                        Timber.tag(TAG).d("位置：" + position + "      选项卡：" + name);
                     }
                 });
 
@@ -89,14 +90,19 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainCon
     }
 
     @Override
-    public void hideLoading() {
+    public void hideLoading(int lastId) {
+
+    }
+
+    @Override
+    public void endLoadMore(int lastId) {
 
     }
 
     @Override
     public void showMessage(@NonNull String message) {
         checkNotNull(message);
-        ArmsUtils.snackbarText(message);
+        ArmsUtils.makeText(this,message);
     }
 
     @Override

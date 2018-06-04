@@ -59,7 +59,7 @@ public class RxUtils {
                         .doFinally(new Action() {
                             @Override
                             public void run() {
-                                view.hideLoading();//隐藏进度条
+                                view.hideLoading(0);//隐藏进度条
                             }
                         }).compose(RxLifecycleUtils.bindToLifecycle(view));
             }

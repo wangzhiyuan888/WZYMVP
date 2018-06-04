@@ -20,6 +20,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
+import android.view.View;
 
 import com.jess.arms.base.BaseActivity;
 import com.jess.arms.base.DefaultAdapter;
@@ -76,8 +78,13 @@ public class UserActivity extends BaseActivity<UserPresenter> implements UserCon
     }
 
     @Override
+    protected View initDefaultView() {
+        return LayoutInflater.from(this).inflate(com.jess.arms.R.layout.activity_commont_layout_type, null, false);
+    }
+
+    @Override
     public int initView(Bundle savedInstanceState) {
-        return R.layout.activity_user;
+        return R.layout.activity_user_content;
     }
 
     @Override
@@ -85,6 +92,13 @@ public class UserActivity extends BaseActivity<UserPresenter> implements UserCon
         initRecyclerView();
         mRecyclerView.setAdapter(mAdapter);
         initPaginate();
+        showEmpty();
+        super.setEmptyViewClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showContent();
+            }
+        });
     }
 
     @Override
@@ -108,14 +122,14 @@ public class UserActivity extends BaseActivity<UserPresenter> implements UserCon
     }
 
     @Override
-    public void hideLoading() {
+    public void hideLoading(int lastId) {
         Timber.tag(TAG).w("hideLoading");
         mSwipeRefreshLayout.setRefreshing(false);
     }
 
     @Override
     public void showMessage(String message) {
-        ArmsUtils.snackbarText(message);
+        ArmsUtils.makeText(this,message);
     }
 
     @Override
@@ -140,7 +154,7 @@ public class UserActivity extends BaseActivity<UserPresenter> implements UserCon
      * 结束加载更多
      */
     @Override
-    public void endLoadMore() {
+    public void endLoadMore(int lastUserId) {
         isLoadingMore = false;
     }
 

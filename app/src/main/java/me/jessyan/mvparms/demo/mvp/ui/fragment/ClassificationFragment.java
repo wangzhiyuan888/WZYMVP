@@ -7,11 +7,14 @@ import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.jess.arms.base.BaseFragment;
 import com.jess.arms.di.component.AppComponent;
 import com.jess.arms.utils.ArmsUtils;
 
+import butterknife.BindView;
+import butterknife.OnClick;
 import me.jessyan.mvparms.demo.di.component.DaggerClassificationComponent;
 import me.jessyan.mvparms.demo.di.module.ClassificationModule;
 import me.jessyan.mvparms.demo.mvp.contract.ClassificationContract;
@@ -19,11 +22,15 @@ import me.jessyan.mvparms.demo.mvp.presenter.ClassificationPresenter;
 
 import me.jessyan.mvparms.demo.R;
 import me.jessyan.mvparms.demo.mvp.ui.activity.MainActivity;
+import me.jessyan.mvparms.demo.mvp.ui.activity.UserActivity;
 
 import static com.jess.arms.utils.Preconditions.checkNotNull;
 
 
 public class ClassificationFragment extends BaseFragment<ClassificationPresenter> implements ClassificationContract.View {
+
+    @BindView(R.id.content_layout)
+    TextView contentLayout;
 
     @Override
     public void onAttach(Context context) {
@@ -83,14 +90,19 @@ public class ClassificationFragment extends BaseFragment<ClassificationPresenter
     }
 
     @Override
-    public void hideLoading() {
+    public void hideLoading(int lastId) {
+
+    }
+
+    @Override
+    public void endLoadMore(int lastId) {
 
     }
 
     @Override
     public void showMessage(@NonNull String message) {
         checkNotNull(message);
-        ArmsUtils.snackbarText(message);
+        ArmsUtils.makeText(getContext(),message);
     }
 
     @Override
@@ -102,6 +114,11 @@ public class ClassificationFragment extends BaseFragment<ClassificationPresenter
     @Override
     public void killMyself() {
 
+    }
+
+    @OnClick(R.id.content_layout)
+    public void onClickContentLayout(){
+        startActivity(new Intent(getActivity(), UserActivity.class).putExtra("show_title_type", 1));
     }
 
 }

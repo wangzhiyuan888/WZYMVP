@@ -26,6 +26,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.view.animation.AnimationUtils;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import com.jess.arms.R;
@@ -79,6 +80,11 @@ public abstract class BaseFragment<P extends IPresenter> extends Fragment implem
         return mCache;
     }
 
+
+    /***************************************  StubView 相关配置 ***********************************/
+    private View mView;
+    private FrameLayout tempLayout;
+
     /**
      * 视图类型,内容,加载中,没有数据,网络异常
      */
@@ -115,12 +121,30 @@ public abstract class BaseFragment<P extends IPresenter> extends Fragment implem
         return mLifecycleSubject;
     }
 
+    /**
+     * 默认布局
+     * @return
+     */
+    protected View initDefaultView(){
+        return LayoutInflater.from(getActivity()).inflate(R.layout.activity_commont_layout_type, null, false);
+    }
+
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        mView = initDefaultView();
+        tempLayout = (FrameLayout) mView.findViewById(R.id.temp_layout);
+        tempLayout.removeAllViews();
+        tempLayout.addView(LayoutInflater.from(getActivity()).inflate(getFragmentLayoutResourceId(), null, false));
+        ensureContent();
+        if (mCurrentViewType != ViewType.CONTENT) {
+            switchView(getCurrentView(), mContentView, false);
+        }
+        mIsViewCreated = true;
         mTempView = initView(inflater, container, savedInstanceState);
-        return inflater.inflate(getFragmentLayoutResourceId(), container, false);
+        getCurrentView();
+        return mView;
     }
 
     /**
@@ -139,12 +163,12 @@ public abstract class BaseFragment<P extends IPresenter> extends Fragment implem
      */
     @Override public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        ensureContent();
-        setContentView(mTempView);
-        mIsViewCreated = true;
+        /*ensureContent();
         if (mCurrentViewType != ViewType.CONTENT) {
             switchView(getCurrentView(), mContentView, false);
         }
+        mIsViewCreated = true;
+        getCurrentView();*/
     }
 
     /**
@@ -163,6 +187,18 @@ public abstract class BaseFragment<P extends IPresenter> extends Fragment implem
      * @see #setContentView(View)
      */
     public View getContentView() {
+        if (mContentContainer instanceof ViewGroup) {
+            ViewGroup contentContainer = (ViewGroup) mContentContainer;
+            if (mContentView == null) {
+                contentContainer.addView(mTempView);
+            } else {
+                int index = contentContainer.indexOfChild(mContentView);
+                // replace content mTempView
+                contentContainer.removeView(mContentView);
+                contentContainer.addView(mTempView, index);
+            }
+            mContentView = mTempView;
+        }
         return mContentView;
     }
 
@@ -350,34 +386,30 @@ public abstract class BaseFragment<P extends IPresenter> extends Fragment implem
         if (mContentContainer != null) {// 已经初始化
             return;
         }
-        View root = getView();
-        if (root == null) {
-            throw new IllegalStateException("Content mTempView not yet created");
-        }
 
         // 内容
-        mContentContainer = root.findViewById(R.id.content_container);
+        mContentContainer = mView.findViewById(R.id.content_container);
         if (mContentContainer == null) {
             throw new RuntimeException(
                     "Your content must have a ViewGroup whose id attribute is 'R.id.content_container'");
         }
 
         // 加载进度
-        mProgressStub = (ViewStub) root.findViewById(R.id.progress_stub);
+        mProgressStub = (ViewStub) mView.findViewById(R.id.progress_stub);
         if (mProgressStub == null) {
             throw new RuntimeException(
                     "Your content must have a ViewStub whose id attribute is 'R.id.progress_stub'");
         }
 
         // 空视图
-        mEmptyStub = (ViewStub) root.findViewById(R.id.empty_stub);
+        mEmptyStub = (ViewStub) mView.findViewById(R.id.empty_stub);
         if (mEmptyStub == null) {
             throw new RuntimeException(
                     "Your content must have a ViewStub whose id attribute is 'R.id.empty_stub'");
         }
 
         // 网络异常
-        mNetWorkErrorStub = (ViewStub) root.findViewById(R.id.network_error_stub);
+        mNetWorkErrorStub = (ViewStub) mView.findViewById(R.id.network_error_stub);
         if (mNetWorkErrorStub == null) {
             throw new RuntimeException(
                     "Your content must have a ViewStub whose id attribute is 'R.id.network_error_stub'");
@@ -397,7 +429,12 @@ public abstract class BaseFragment<P extends IPresenter> extends Fragment implem
                 break;
             }
             case CONTENT: {
-                view = mContentView;
+                if (mContentView == null) {
+                    view = getContentView();
+                } else {
+                    view = mContentView;
+
+                }
                 break;
             }
             case EMPTY: {

@@ -128,9 +128,9 @@ public class UserPresenter extends BasePresenter<UserContract.Model, UserContrac
                 .observeOn(AndroidSchedulers.mainThread())
                 .doFinally(() -> {
                     if (pullToRefresh)
-                        mRootView.hideLoading();//隐藏下拉刷新的进度条
+                        mRootView.hideLoading(lastUserId);//隐藏下拉刷新的进度条
                     else
-                        mRootView.endLoadMore();//隐藏上拉加载更多的进度条
+                        mRootView.endLoadMore(lastUserId);//隐藏上拉加载更多的进度条
                 })
                 .compose(RxLifecycleUtils.bindToLifecycle(mRootView))//使用 Rxlifecycle,使 Disposable 和 Activity 一起销毁
                 .subscribe(new ErrorHandleSubscriber<List<User>>(mErrorHandler) {
