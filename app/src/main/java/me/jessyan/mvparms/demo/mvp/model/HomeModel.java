@@ -43,15 +43,15 @@ public class HomeModel extends BaseModel implements HomeContract.Model {
                 .obtainRetrofitService(UserService.class)
                 .getUsers(lastIdQueried, USERS_PER_PAGE))
                 .flatMap(new Function<Observable<List<User>>, ObservableSource<List<User>>>() {
-            @Override
-            public ObservableSource<List<User>> apply(@NonNull Observable<List<User>> listObservable) throws Exception {
-                return mRepositoryManager.obtainCacheService(CommonCache.class)
-                        .getUsers(listObservable
-                                , new DynamicKey(lastIdQueried)
-                                , new EvictDynamicKey(update))
-                        .map(listReply -> listReply.getData());
-            }
-        });
+                    @Override
+                    public ObservableSource<List<User>> apply(@NonNull Observable<List<User>> listObservable) throws Exception {
+                        return mRepositoryManager.obtainCacheService(CommonCache.class)
+                                .getUsers(listObservable
+                                        , new DynamicKey(lastIdQueried)
+                                        , new EvictDynamicKey(update))
+                                .map(listReply -> listReply.getData());
+                    }
+                });
 
     }
 

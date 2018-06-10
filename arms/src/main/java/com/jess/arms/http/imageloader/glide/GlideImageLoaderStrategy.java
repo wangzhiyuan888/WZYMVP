@@ -1,18 +1,18 @@
-/**
-  * Copyright 2017 JessYan
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License");
-  * you may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at
-  *
-  *      http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  */
+/*
+ * Copyright 2017 JessYan
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.jess.arms.http.imageloader.glide;
 
 import android.content.Context;
@@ -23,10 +23,12 @@ import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.GlideBuilder;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.jess.arms.di.module.GlobalConfigModule;
 import com.jess.arms.http.imageloader.BaseImageLoaderStrategy;
 import com.jess.arms.http.imageloader.ImageConfig;
+import com.jess.arms.utils.Preconditions;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -50,19 +52,17 @@ public class GlideImageLoaderStrategy implements BaseImageLoaderStrategy<ImageCo
 
     @Override
     public void loadImage(Context ctx, ImageConfigImpl config) {
-        if (ctx == null) throw new NullPointerException("Context is required");
-        if (config == null) throw new NullPointerException("ImageConfigImpl is required");
+        Preconditions.checkNotNull(ctx, "Context is required");
+        Preconditions.checkNotNull(config, "ImageConfigImpl is required");
         if (TextUtils.isEmpty(config.getUrl())) throw new NullPointerException("Url is required");
-        if (config.getImageView() == null) throw new NullPointerException("Imageview is required");
+        Preconditions.checkNotNull(config.getImageView(), "ImageView is required");
 
 
         GlideRequests requests;
 
         requests = GlideArms.with(ctx);//如果context是activity则自动使用Activity的生命周期
 
-        GlideRequest<Drawable> glideRequest = requests.load(config.getUrl())
-                .transition(DrawableTransitionOptions.withCrossFade())
-                .centerCrop();
+        GlideRequest<Drawable> glideRequest = requests.load(config.getUrl());
 
         switch (config.getCacheStrategy()) {//缓存策略
             case 0:
@@ -80,11 +80,34 @@ public class GlideImageLoaderStrategy implements BaseImageLoaderStrategy<ImageCo
             case 4:
                 glideRequest.diskCacheStrategy(DiskCacheStrategy.AUTOMATIC);
                 break;
+            default:
+                glideRequest.diskCacheStrategy(DiskCacheStrategy.ALL);
+                break;
         }
+
+        if (config.isCrossFade()) {
+            glideRequest.transition(DrawableTransitionOptions.withCrossFade());
+        }
+
+        if (config.isCenterCrop()) {
+            glideRequest.centerCrop();
+        }
+
+        if (config.isCircle()) {
+            glideRequest.circleCrop();
+        }
+
+        if (config.isImageRadius()) {
+            glideRequest.transform(new RoundedCorners(config.getImageRadius()));
+        }
+
+        if (config.isBlurImage()) {
+            glideRequest.transform(new BlurTransformation(config.getBlurValue()));
+        }
+
         if (config.getTransformation() != null) {//glide用它来改变图形的形状
             glideRequest.transform(config.getTransformation());
         }
-
 
         if (config.getPlaceholder() != 0)//设置占位符
             glideRequest.placeholder(config.getPlaceholder());
@@ -102,8 +125,8 @@ public class GlideImageLoaderStrategy implements BaseImageLoaderStrategy<ImageCo
 
     @Override
     public void clear(final Context ctx, ImageConfigImpl config) {
-        if (ctx == null) throw new NullPointerException("Context is required");
-        if (config == null) throw new NullPointerException("ImageConfigImpl is required");
+        Preconditions.checkNotNull(ctx, "Context is required");
+        Preconditions.checkNotNull(config, "ImageConfigImpl is required");
 
         if (config.getImageViews() != null && config.getImageViews().length > 0) {//取消在执行的任务并且释放资源
             for (ImageView imageView : config.getImageViews()) {

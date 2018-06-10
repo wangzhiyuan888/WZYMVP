@@ -5,15 +5,14 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentManager;
-import android.util.Log;
 
-import com.hjm.bottomtabbar.BottomTabBar;
 import com.jess.arms.base.BaseActivity;
 import com.jess.arms.base.BaseFragment;
 import com.jess.arms.base.struct.FunctionWithParamAndResult;
 import com.jess.arms.base.struct.FunctionsManager;
 import com.jess.arms.di.component.AppComponent;
 import com.jess.arms.utils.ArmsUtils;
+import com.jess.arms.widget.BottomTabBar;
 
 import butterknife.BindView;
 import me.jessyan.mvparms.demo.di.component.DaggerMainComponent;
@@ -46,7 +45,7 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainCon
     }
 
     @Override
-    public void setupActivityComponent(AppComponent appComponent) {
+    public void setupActivityComponent(@NonNull AppComponent appComponent) {
         DaggerMainComponent //如找不到该类,请编译一下项目
                 .builder()
                 .appComponent(appComponent)
@@ -56,12 +55,12 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainCon
     }
 
     @Override
-    public int initView(Bundle savedInstanceState) {
+    public int initView(@NonNull Bundle savedInstanceState) {
         return R.layout.activity_main; //如果你不需要框架帮你设置 setContentView(id) 需要自行设置,请返回 0
     }
 
     @Override
-    public void initData(Bundle savedInstanceState) {
+    public void initData(@NonNull Bundle savedInstanceState) {
         mBottomBar.init(getSupportFragmentManager())
                 .setImgSize(23, 23)
                 .setFontSize(12)
@@ -90,12 +89,12 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainCon
     }
 
     @Override
-    public void hideLoading(int lastId) {
+    public void hideLoading() {
 
     }
 
     @Override
-    public void endLoadMore(int lastId) {
+    public void endLoadMore() {
 
     }
 
@@ -137,6 +136,4 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainCon
             }
         }));
     }
-
-
 }

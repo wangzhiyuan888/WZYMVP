@@ -68,7 +68,8 @@ public abstract class BaseActivity<P extends IPresenter> extends AppCompatActivi
     private Cache<String, Object> mCache;
     private Unbinder mUnbinder;
     @Inject
-    protected P mPresenter;
+    @Nullable
+    protected P mPresenter;//如果当前页面逻辑简单, Presenter 可以为 null
 
     private FrameLayout tempLayout;
 
@@ -98,8 +99,6 @@ public abstract class BaseActivity<P extends IPresenter> extends AppCompatActivi
     private View mContentView;//内容视图
     private View mEmptyView;//空区域
     private View mNetWorkErrorView;//网络异常视图
-
-    private View mView;
     private View mTempView;//临时保存创建的内容,在onViewCreated之后设置进去
 
     private ViewStub mProgressStub;
@@ -118,8 +117,8 @@ public abstract class BaseActivity<P extends IPresenter> extends AppCompatActivi
      * 默认布局
      * @return
      */
-    protected View initDefaultView(){
-        return LayoutInflater.from(this).inflate(R.layout.activity_commont_layout_type_1, null, false);
+    protected int initDefaultView(Bundle savedInstanceState){
+        return R.layout.activity_commont_layout_type_1;
     }
 
 
@@ -139,20 +138,23 @@ public abstract class BaseActivity<P extends IPresenter> extends AppCompatActivi
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         try {
-            mView = initDefaultView();
-            tempLayout = (FrameLayout) mView.findViewById(R.id.temp_layout);
-            tempLayout.removeAllViews();
-            tempLayout.addView(LayoutInflater.from(this).inflate(getActivityLayoutResourceId(), null, false));
-            setContentView(mView);
-            ensureContent();
-            mTempView = LayoutInflater.from(this).inflate(initView(savedInstanceState), null, false);
-
-            if (mCurrentViewType != ViewType.CONTENT) {
-                switchView(getCurrentView(), mContentView, false);
+            int layoutResID = initDefaultView(savedInstanceState);
+            //如果initView返回0,框架则不会调用setContentView(),当然也不会 Bind ButterKnife
+            if (layoutResID != 0) {
+                setContentView(layoutResID);
+                tempLayout = (FrameLayout) findViewById(R.id.temp_layout);
+                tempLayout.removeAllViews();
+                LayoutInflater.from(this).inflate(getActivityLayoutResourceId(), tempLayout, true);
+                ensureContent();
+                mTempView = LayoutInflater.from(this).inflate(initView(savedInstanceState), null, false);
+                if (mCurrentViewType != ViewType.CONTENT) {
+                    switchView(getCurrentView(), mContentView, false);
+                }
+                mIsViewCreated = true;
+                getCurrentView();
+                initData(savedInstanceState);
             }
-            mIsViewCreated = true;
-            getCurrentView();
-            initData(savedInstanceState);
+
 
         }catch (Exception e){
             e.printStackTrace();
@@ -166,9 +168,9 @@ public abstract class BaseActivity<P extends IPresenter> extends AppCompatActivi
 
     @Override
     protected void onDestroy() {
+        super.onDestroy();
         mProgressContainer = mContentContainer = mContentView = mEmptyView = mNetWorkErrorView = null;
         mProgressStub = mEmptyStub = mNetWorkErrorStub = null;
-        super.onDestroy();
         mIsViewCreated = false;
         if (mUnbinder != null && mUnbinder != Unbinder.EMPTY)
             mUnbinder.unbind();
@@ -444,7 +446,7 @@ public abstract class BaseActivity<P extends IPresenter> extends AppCompatActivi
         if(isHasFragment()){
             goToFragmentShowTypeView(object);
         }else {
-            Map<String,Object> map = (Map<String, Object>) object;
+            /*Map<String,Object> map = (Map<String, Object>) object;
             if(map != null && "1".equals(map.get("type"))){
                 //网络不可用
                 showNetWorkError();
@@ -483,7 +485,7 @@ public abstract class BaseActivity<P extends IPresenter> extends AppCompatActivi
                 setEmptyMessage("未知错误", R.drawable.ic_order_empty);
                 showEmpty();
 
-            }
+            }*/
 
         }
 

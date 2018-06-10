@@ -1,19 +1,21 @@
-/**
-  * Copyright 2017 JessYan
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License");
-  * you may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at
-  *
-  *      http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  */
+/*
+ * Copyright 2017 JessYan
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.jess.arms.http;
+
+import android.support.annotation.NonNull;
 
 import com.bumptech.glide.load.Options;
 import com.bumptech.glide.load.model.GlideUrl;
@@ -31,27 +33,31 @@ public class OkHttpUrlLoader implements ModelLoader<GlideUrl, InputStream> {
 
     private final Call.Factory client;
 
-    public OkHttpUrlLoader(Call.Factory client) {
+    // Public API.
+    @SuppressWarnings("WeakerAccess")
+    public OkHttpUrlLoader(@NonNull Call.Factory client) {
         this.client = client;
     }
 
     @Override
-    public boolean handles(GlideUrl url) {
+    public boolean handles(@NonNull GlideUrl url) {
         return true;
     }
 
     @Override
-    public LoadData<InputStream> buildLoadData(GlideUrl model, int width, int height,
-                                               Options options) {
+    public LoadData<InputStream> buildLoadData(@NonNull GlideUrl model, int width, int height,
+                                               @NonNull Options options) {
         return new LoadData<>(model, new OkHttpStreamFetcher(client, model));
     }
 
     /**
      * The default factory for {@link OkHttpUrlLoader}s.
      */
+    // Public API.
+    @SuppressWarnings("WeakerAccess")
     public static class Factory implements ModelLoaderFactory<GlideUrl, InputStream> {
         private static volatile Call.Factory internalClient;
-        private Call.Factory client;
+        private final Call.Factory client;
 
         private static Call.Factory getInternalClient() {
             if (internalClient == null) {
@@ -76,10 +82,11 @@ public class OkHttpUrlLoader implements ModelLoader<GlideUrl, InputStream> {
          *
          * @param client this is typically an instance of {@code OkHttpClient}.
          */
-        public Factory(Call.Factory client) {
+        public Factory(@NonNull Call.Factory client) {
             this.client = client;
         }
 
+        @NonNull
         @Override
         public ModelLoader<GlideUrl, InputStream> build(MultiModelLoaderFactory multiFactory) {
             return new OkHttpUrlLoader(client);

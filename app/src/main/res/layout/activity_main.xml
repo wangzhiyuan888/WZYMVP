@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <com.hjm.bottomtabbar.BottomTabBar
+    <com.jess.arms.widget.BottomTabBar
         android:id="@+id/bottom_bar"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

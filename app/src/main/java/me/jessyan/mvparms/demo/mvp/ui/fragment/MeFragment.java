@@ -33,14 +33,8 @@ public class MeFragment extends BaseFragment<MePresenter> implements MeContract.
         }
     }
 
-
-    public static MeFragment newInstance() {
-        MeFragment fragment = new MeFragment();
-        return fragment;
-    }
-
     @Override
-    public void setupFragmentComponent(AppComponent appComponent) {
+    public void setupFragmentComponent(@NonNull AppComponent appComponent) {
         DaggerMeComponent //如找不到该类,请编译一下项目
                 .builder()
                 .appComponent(appComponent)
@@ -51,11 +45,11 @@ public class MeFragment extends BaseFragment<MePresenter> implements MeContract.
 
     @Override
     public View initView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_me, container, false);
+        return LayoutInflater.from(getActivity()).inflate(R.layout.fragment_me, container, false);
     }
 
     @Override
-    public void initData(Bundle savedInstanceState) {
+    public void initData(@NonNull Bundle savedInstanceState) {
 
     }
 
@@ -72,7 +66,7 @@ public class MeFragment extends BaseFragment<MePresenter> implements MeContract.
      */
 
     @Override
-    public void setData(Object data) {
+    public void setData(@NonNull Object data) {
 
     }
 
@@ -83,12 +77,12 @@ public class MeFragment extends BaseFragment<MePresenter> implements MeContract.
     }
 
     @Override
-    public void hideLoading(int lastId) {
+    public void hideLoading() {
 
     }
 
     @Override
-    public void endLoadMore(int lastId) {
+    public void endLoadMore() {
 
     }
 

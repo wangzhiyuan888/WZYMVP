@@ -66,6 +66,8 @@ public class UserItemHolder extends BaseHolder<User> {
                         .builder()
                         .url(data.getAvatarUrl())
                         .imageView(mAvatar)
+                        .isCrossFade(true)
+                        .isCircle(true)
                         .build());
     }
 

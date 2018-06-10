@@ -1,22 +1,25 @@
-/**
-  * Copyright 2017 JessYan
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License");
-  * you may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at
-  *
-  *      http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  */
+/*
+ * Copyright 2017 JessYan
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.jess.arms.base.delegate;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.View;
 
 import com.jess.arms.utils.ArmsUtils;
@@ -43,33 +46,35 @@ public class FragmentDelegateImpl implements FragmentDelegate {
     private Unbinder mUnbinder;
 
 
-    public FragmentDelegateImpl(android.support.v4.app.FragmentManager fragmentManager, android.support.v4.app.Fragment fragment) {
+    public FragmentDelegateImpl(@NonNull android.support.v4.app.FragmentManager fragmentManager, @NonNull android.support.v4.app.Fragment fragment) {
         this.mFragmentManager = fragmentManager;
         this.mFragment = fragment;
         this.iFragment = (IFragment) fragment;
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
 
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         if (iFragment.useEventBus())//如果要使用eventbus请将此方法返回true
             EventBus.getDefault().register(mFragment);//注册到事件主线
         iFragment.setupFragmentComponent(ArmsUtils.obtainAppComponentFromContext(mFragment.getActivity()));
     }
 
     @Override
-    public void onCreateView(View view, Bundle savedInstanceState) {
+    public void onCreateView(@Nullable View view, @Nullable Bundle savedInstanceState) {
+        Log.e("Fragment", "Fragment onCreate");
         //绑定到butterknife
         if (view != null)
             mUnbinder = ButterKnife.bind(mFragment, view);
     }
 
     @Override
-    public void onActivityCreate(Bundle savedInstanceState) {
+    public void onActivityCreate(@Nullable Bundle savedInstanceState) {
+        Log.e("onActivityCreate", "Fragment onActivityCreate");
         iFragment.initData(savedInstanceState);
     }
 
@@ -94,13 +99,13 @@ public class FragmentDelegateImpl implements FragmentDelegate {
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
 
     }
 
     @Override
     public void onDestroyView() {
-        if (mUnbinder != null && mUnbinder != mUnbinder.EMPTY) {
+        if (mUnbinder != null && mUnbinder != Unbinder.EMPTY) {
             try {
                 mUnbinder.unbind();
             } catch (IllegalStateException e) {

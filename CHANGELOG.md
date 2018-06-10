@@ -1,1 +1,0 @@
-[UpdateLog](https://github.com/JessYanCoding/MVPArms/wiki/UpdateLog)

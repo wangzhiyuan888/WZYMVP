@@ -1,1 +1,1 @@
-include ':app', ':arms', ':bottomtabbar', ':LRecyclerview_library'
+include ':app', ':arms', ':lrecyclerview_library'

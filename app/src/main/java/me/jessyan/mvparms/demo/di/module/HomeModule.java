@@ -3,6 +3,7 @@ package me.jessyan.mvparms.demo.di.module;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
+import com.github.jdsjlzx.recyclerview.LRecyclerViewAdapter;
 import com.jess.arms.di.scope.ActivityScope;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 
@@ -66,6 +67,6 @@ public class HomeModule {
     @ActivityScope
     @Provides
     RecyclerView.Adapter provideHomeAdapter(List<User> list){
-        return new UserAdapter(list);
+        return new LRecyclerViewAdapter(new UserAdapter(list));
     }
 }

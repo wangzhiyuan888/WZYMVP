@@ -1,4 +1,4 @@
-package com.hjm.bottomtabbar.util;
+package com.jess.arms.widget.util;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -11,7 +11,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 
 /**
- * Created by hjm on 2016/9/4.
+ * Created by wangzhiyuan on 2016/9/4.
  * <p/>
  * 切记：ImageView一定要设为可点击的
  */

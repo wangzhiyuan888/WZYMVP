@@ -1,4 +1,4 @@
-/**
+/*
   * Copyright 2017 JessYan
   *
   * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,6 @@ import android.support.v4.app.SupportActivity;
 import android.support.v7.widget.RecyclerView;
 
 import com.jess.arms.di.scope.ActivityScope;
-import com.jess.arms.http.imageloader.ImageLoader;
 import com.jess.arms.integration.AppManager;
 import com.jess.arms.mvp.BasePresenter;
 import com.jess.arms.utils.PermissionUtil;
@@ -35,7 +34,6 @@ import javax.inject.Inject;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
-import me.jessyan.mvparms.demo.mvp.contract.FindContract;
 import me.jessyan.mvparms.demo.mvp.contract.UserContract;
 import me.jessyan.mvparms.demo.mvp.model.entity.User;
 import me.jessyan.rxerrorhandler.core.RxErrorHandler;
@@ -54,26 +52,24 @@ import me.jessyan.rxerrorhandler.handler.RetryWithDelay;
  */
 @ActivityScope
 public class UserPresenter extends BasePresenter<UserContract.Model, UserContract.View> {
-    private RxErrorHandler mErrorHandler;
-    private AppManager mAppManager;
-    private Application mApplication;
-    private List<User> mUsers;
-    private RecyclerView.Adapter mAdapter;
+	@Inject
+    RxErrorHandler mErrorHandler;
+    @Inject
+    AppManager mAppManager;
+    @Inject
+    Application mApplication;
+    @Inject
+    List<User> mUsers;
+    @Inject
+    RecyclerView.Adapter mAdapter;
     private int lastUserId = 1;
     private boolean isFirst = true;
     private int preEndIndex;
 
 
     @Inject
-    public UserPresenter(UserContract.Model model, UserContract.View rootView
-            , RxErrorHandler handler, Application application
-            , ImageLoader imageLoader, AppManager appManager, List<User> list, RecyclerView.Adapter adapter) {
+    public UserPresenter(UserContract.Model model, UserContract.View rootView) {
         super(model, rootView);
-        this.mApplication = application;
-        this.mErrorHandler = handler;
-        this.mAppManager = appManager;
-        this.mUsers = list;
-        this.mAdapter = adapter;
     }
 
     /**
@@ -128,9 +124,9 @@ public class UserPresenter extends BasePresenter<UserContract.Model, UserContrac
                 .observeOn(AndroidSchedulers.mainThread())
                 .doFinally(() -> {
                     if (pullToRefresh)
-                        mRootView.hideLoading(lastUserId);//隐藏下拉刷新的进度条
+                        mRootView.hideLoading();//隐藏下拉刷新的进度条
                     else
-                        mRootView.endLoadMore(lastUserId);//隐藏上拉加载更多的进度条
+                        mRootView.endLoadMore();//隐藏上拉加载更多的进度条
                 })
                 .compose(RxLifecycleUtils.bindToLifecycle(mRootView))//使用 Rxlifecycle,使 Disposable 和 Activity 一起销毁
                 .subscribe(new ErrorHandleSubscriber<List<User>>(mErrorHandler) {

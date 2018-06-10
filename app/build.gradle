@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion rootProject.ext.android["compileSdkVersion"]
-    buildToolsVersion '26.0.2'
+    buildToolsVersion rootProject.ext.android["buildToolsVersion"]
     useLibrary 'org.apache.http.legacy'
 
     compileOptions {
@@ -19,6 +19,7 @@ android {
         versionName rootProject.ext.android["versionName"]
         testInstrumentationRunner rootProject.ext.dependencies["androidJUnitRunner"]
     }
+
     buildTypes {
 
         debug {
@@ -62,6 +63,7 @@ dependencies {
     annotationProcessor rootProject.ext.dependencies["dagger2-compiler"]
     implementation rootProject.ext.dependencies["progressmanager"]
     implementation rootProject.ext.dependencies["retrofit-url-manager"]
+    implementation rootProject.ext.dependencies["lifecyclemodel"]
     //view
     annotationProcessor(rootProject.ext.dependencies["butterknife-compiler"]) {
         exclude module: 'support-annotations'
@@ -69,8 +71,7 @@ dependencies {
     implementation rootProject.ext.dependencies["paginate"]
     //arms
     implementation project(':arms')
-    implementation project(':bottomtabbar')
-    implementation project(':LRecyclerview_library')
+    implementation project(':lrecyclerview_library')
 
     // 下拉刷新
     implementation rootProject.ext.dependencies["smartRefreshLayout"]

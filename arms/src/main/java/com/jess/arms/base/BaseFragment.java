@@ -62,7 +62,8 @@ public abstract class BaseFragment<P extends IPresenter> extends Fragment implem
     private final BehaviorSubject<FragmentEvent> mLifecycleSubject = BehaviorSubject.create();
     private Cache<String, Object> mCache;
     @Inject
-    protected P mPresenter;
+    @Nullable
+    protected P mPresenter;//如果当前页面逻辑简单, Presenter 可以为 null
 
     protected FunctionsManager mFunctionsManager;
     public static final String INTERFACE = BaseFragment.class.getName();
@@ -125,18 +126,18 @@ public abstract class BaseFragment<P extends IPresenter> extends Fragment implem
      * 默认布局
      * @return
      */
-    protected View initDefaultView(){
-        return LayoutInflater.from(getActivity()).inflate(R.layout.activity_commont_layout_type, null, false);
+    protected View initDefaultView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceStat){
+        return LayoutInflater.from(getActivity()).inflate(R.layout.activity_commont_layout_type, container, false);
     }
 
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mView = initDefaultView();
+        mView = initDefaultView(inflater, container, savedInstanceState);
         tempLayout = (FrameLayout) mView.findViewById(R.id.temp_layout);
         tempLayout.removeAllViews();
-        tempLayout.addView(LayoutInflater.from(getActivity()).inflate(getFragmentLayoutResourceId(), null, false));
+        tempLayout.addView(inflater.inflate(getFragmentLayoutResourceId(), null, false));
         ensureContent();
         if (mCurrentViewType != ViewType.CONTENT) {
             switchView(getCurrentView(), mContentView, false);

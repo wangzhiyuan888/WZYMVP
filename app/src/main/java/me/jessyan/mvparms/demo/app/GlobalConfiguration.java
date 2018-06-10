@@ -1,18 +1,18 @@
-/**
-  * Copyright 2017 JessYan
-  *
-  * Licensed under the Apache License, Version 2.0 (the "License");
-  * you may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at
-  *
-  *      http://www.apache.org/licenses/LICENSE-2.0
-  *
-  * Unless required by applicable law or agreed to in writing, software
-  * distributed under the License is distributed on an "AS IS" BASIS,
-  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  * See the License for the specific language governing permissions and
-  * limitations under the License.
-  */
+/*
+ * Copyright 2017 JessYan
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package me.jessyan.mvparms.demo.app;
 
 import android.app.Application;
@@ -23,8 +23,9 @@ import android.support.v4.app.FragmentManager;
 
 import com.jess.arms.base.delegate.AppLifecycles;
 import com.jess.arms.di.module.GlobalConfigModule;
-import com.jess.arms.http.RequestInterceptor;
+import com.jess.arms.http.log.RequestInterceptor;
 import com.jess.arms.integration.ConfigModule;
+import com.jess.arms.integration.cache.IntelligentCache;
 import com.jess.arms.utils.ArmsUtils;
 import com.squareup.leakcanary.RefWatcher;
 
@@ -38,8 +39,12 @@ import me.jessyan.retrofiturlmanager.RetrofitUrlManager;
 
 /**
  * ================================================
- * app 的全局配置信息在此配置,需要将此实现类声明到 AndroidManifest 中
- * <p>
+ * App 的全局配置信息在此配置, 需要将此实现类声明到 AndroidManifest 中
+ * ConfigModule 的实现类可以有无数多个, 在 Application 中只是注册回调, 并不会影响性能 (多个 ConfigModule 在多 Module 环境下尤为受用)
+ * 不过要注意 ConfigModule 接口的实现类对象是通过反射生成的, 这里会有些性能损耗
+ *
+ * @see com.jess.arms.base.delegate.AppDelegate
+ * @see com.jess.arms.integration.ManifestParser
  * Created by JessYan on 12/04/2017 17:25
  * <a href="mailto:jess.yan.effort@gmail.com">Contact me</a>
  * <a href="https://github.com/JessYanCoding">Follow me</a>
@@ -50,7 +55,7 @@ public final class GlobalConfiguration implements ConfigModule {
 
     @Override
     public void applyOptions(Context context, GlobalConfigModule.Builder builder) {
-        if (!BuildConfig.LOG_DEBUG){ //Release 时,让框架不再打印 Http 请求和响应的信息
+        if (!BuildConfig.LOG_DEBUG) { //Release 时,让框架不再打印 Http 请求和响应的信息
             builder.printHttpLogLevel(RequestInterceptor.Level.NONE);
         }
 
@@ -59,10 +64,11 @@ public final class GlobalConfiguration implements ConfigModule {
                 //请参考 https://github.com/JessYanCoding/MVPArms/wiki#3.4
 //                .imageLoaderStrategy(new CustomLoaderStrategy())
 
-                //想支持多 BaseUrl,以及运行时动态切换任意一个 BaseUrl,请使用 https://github.com/JessYanCoding/RetrofitUrlManager
-                //如果 BaseUrl 在 App 启动时不能确定,需要请求服务器接口动态获取,请使用以下代码
-                //以下代码只是配置,还要使用 Okhttp (AppComponent中提供) 请求服务器获取到正确的 BaseUrl 后赋值给 GlobalConfiguration.sDomain
-                //切记整个过程必须在第一次调用 Retrofit 接口之前完成,如果已经调用过 Retrofit 接口,将不能动态切换 BaseUrl
+                //想支持多 BaseUrl, 以及运行时动态切换任意一个 BaseUrl, 请使用 https://github.com/JessYanCoding/RetrofitUrlManager
+                //如果 BaseUrl 在 App 启动时不能确定, 需要请求服务器接口动态获取, 请使用以下代码
+                //以下方式是 Arms 框架自带的切换 BaseUrl 的方式, 在整个 App 生命周期内只能切换一次, 若需要无限次的切换 BaseUrl, 以及各种复杂的应用场景还是需要使用 RetrofitUrlManager 框架
+                //以下代码只是配置, 还要使用 Okhttp (AppComponent中提供) 请求服务器获取到正确的 BaseUrl 后赋值给 GlobalConfiguration.sDomain
+                //切记整个过程必须在第一次调用 Retrofit 接口之前完成, 如果已经调用过 Retrofit 接口, 此种方式将不能切换 BaseUrl
 //                .baseurl(new BaseUrl() {
 //                    @Override
 //                    public HttpUrl url() {
@@ -77,12 +83,38 @@ public final class GlobalConfiguration implements ConfigModule {
 //                    public Cache build(CacheType type) {
 //                        switch (type.getCacheTypeId()){
 //                            case CacheType.EXTRAS_TYPE_ID:
-//                                return new LruCache(1000);
+//                                return new IntelligentCache(500);
 //                            case CacheType.CACHE_SERVICE_CACHE_TYPE_ID:
 //                                return new Cache(type.calculateCacheSize(context));//自定义 Cache
 //                            default:
 //                                return new LruCache(200);
 //                        }
+//                    }
+//                })
+
+                //若觉得框架默认的打印格式并不能满足自己的需求, 可自行扩展自己理想的打印格式 (以下只是简单实现)
+//                .formatPrinter(new FormatPrinter() {
+//                    @Override
+//                    public void printJsonRequest(Request request, String bodyString) {
+//                        Timber.i("printJsonRequest:" + bodyString);
+//                    }
+//
+//                    @Override
+//                    public void printFileRequest(Request request) {
+//                        Timber.i("printFileRequest:" + request.url().toString());
+//                    }
+//
+//                    @Override
+//                    public void printJsonResponse(long chainMs, boolean isSuccessful, int code,
+//                                                  String headers, MediaType contentType, String bodyString,
+//                                                  List<String> segments, String message, String responseUrl) {
+//                        Timber.i("printJsonResponse:" + bodyString);
+//                    }
+//
+//                    @Override
+//                    public void printFileResponse(long chainMs, boolean isSuccessful, int code, String headers,
+//                                                  List<String> segments, String message, String responseUrl) {
+//                        Timber.i("printFileResponse:" + responseUrl);
 //                    }
 //                })
 
@@ -96,7 +128,7 @@ public final class GlobalConfiguration implements ConfigModule {
                             .serializeNulls()//支持序列化null的参数
                             .enableComplexMapKeySerialization();//支持将序列化key为object的map,默认只能序列化key为string的map
                 })
-                .retrofitConfiguration((context1, retrofitBuilder) -> {//这里可以自己自定义配置Retrofit的参数,甚至你可以替换系统配置好的okhttp对象
+                .retrofitConfiguration((context1, retrofitBuilder) -> {//这里可以自己自定义配置Retrofit的参数, 甚至您可以替换框架配置好的 OkHttpClient 对象 (但是不建议这样做, 这样做您将损失框架提供的很多功能)
 //                    retrofitBuilder.addConverterFactory(FastJsonConverterFactory.create());//比如使用fastjson替代gson
                 })
                 .okhttpConfiguration((context1, okhttpBuilder) -> {//这里可以自己自定义配置Okhttp的参数
@@ -147,7 +179,7 @@ public final class GlobalConfiguration implements ConfigModule {
                 ((RefWatcher) ArmsUtils
                         .obtainAppComponentFromContext(f.getActivity())
                         .extras()
-                        .get(RefWatcher.class.getName()))
+                        .get(IntelligentCache.KEY_KEEP + RefWatcher.class.getName()))
                         .watch(f);
             }
         });

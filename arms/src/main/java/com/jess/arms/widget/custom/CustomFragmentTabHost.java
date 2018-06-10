@@ -1,20 +1,18 @@
-package com.hjm.bottomtabbar.custom;
+package com.jess.arms.widget.custom;
 
 /**
- * Created by hjm on 2017/2/19/019.
+ * Created by wangzhiyuan on 2017/2/19/019.
  * 功能描述：修改过的FragmentTabHost,保存fragment实例不销毁
  */
 
-import java.util.ArrayList;
-
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +20,8 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TabHost;
 import android.widget.TabWidget;
+
+import java.util.ArrayList;
 
 public class CustomFragmentTabHost extends TabHost implements TabHost.OnTabChangeListener {
 

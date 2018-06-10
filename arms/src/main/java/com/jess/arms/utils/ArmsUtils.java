@@ -1,4 +1,4 @@
-/**
+/*
   * Copyright 2017 JessYan
   *
   * Licensed under the Apache License, Version 2.0 (the "License");
@@ -411,6 +411,7 @@ public class ArmsUtils {
      * @param layoutManager
      * @deprecated Use {@link #configRecyclerView(RecyclerView, RecyclerView.LayoutManager)} instead
      */
+    @Deprecated
     public static void configRecycleView(final RecyclerView recyclerView
             , RecyclerView.LayoutManager layoutManager) {
         recyclerView.setLayoutManager(layoutManager);

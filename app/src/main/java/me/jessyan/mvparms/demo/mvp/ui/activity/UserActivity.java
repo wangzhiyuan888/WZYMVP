@@ -1,4 +1,4 @@
-/**
+/*
   * Copyright 2017 JessYan
   *
   * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,6 +18,8 @@ package me.jessyan.mvparms.demo.mvp.ui.activity;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -39,6 +41,8 @@ import me.jessyan.mvparms.demo.di.module.UserModule;
 import me.jessyan.mvparms.demo.mvp.contract.UserContract;
 import me.jessyan.mvparms.demo.mvp.presenter.UserPresenter;
 import timber.log.Timber;
+
+import static com.jess.arms.utils.Preconditions.checkNotNull;
 
 
 /**
@@ -68,7 +72,7 @@ public class UserActivity extends BaseActivity<UserPresenter> implements UserCon
     private boolean isLoadingMore;
 
     @Override
-    public void setupActivityComponent(AppComponent appComponent) {
+    public void setupActivityComponent(@NonNull AppComponent appComponent) {
         DaggerUserComponent
                 .builder()
                 .appComponent(appComponent)
@@ -78,21 +82,20 @@ public class UserActivity extends BaseActivity<UserPresenter> implements UserCon
     }
 
     @Override
-    protected View initDefaultView() {
-        return LayoutInflater.from(this).inflate(com.jess.arms.R.layout.activity_commont_layout_type, null, false);
+    protected int initDefaultView(@Nullable Bundle savedInstanceState){
+        return R.layout.activity_commont_layout_type;
     }
 
     @Override
-    public int initView(Bundle savedInstanceState) {
+    public int initView(@Nullable Bundle savedInstanceState) {
         return R.layout.activity_user_content;
     }
 
     @Override
-    public void initData(Bundle savedInstanceState) {
+    public void initData(@Nullable Bundle savedInstanceState) {
         initRecyclerView();
         mRecyclerView.setAdapter(mAdapter);
         initPaginate();
-        showEmpty();
         super.setEmptyViewClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -122,18 +125,20 @@ public class UserActivity extends BaseActivity<UserPresenter> implements UserCon
     }
 
     @Override
-    public void hideLoading(int lastId) {
+    public void hideLoading() {
         Timber.tag(TAG).w("hideLoading");
         mSwipeRefreshLayout.setRefreshing(false);
     }
 
     @Override
-    public void showMessage(String message) {
+    public void showMessage(@NonNull String message) {
+        checkNotNull(message);
         ArmsUtils.makeText(this,message);
     }
 
     @Override
-    public void launchActivity(Intent intent) {
+    public void launchActivity(@NonNull Intent intent) {
+        checkNotNull(intent);
         ArmsUtils.startActivity(intent);
     }
 
@@ -154,7 +159,7 @@ public class UserActivity extends BaseActivity<UserPresenter> implements UserCon
      * 结束加载更多
      */
     @Override
-    public void endLoadMore(int lastUserId) {
+    public void endLoadMore() {
         isLoadingMore = false;
     }
 

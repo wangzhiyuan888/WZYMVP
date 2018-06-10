@@ -12,7 +12,6 @@ import com.jess.arms.utils.PermissionUtil;
 import com.jess.arms.utils.RxLifecycleUtils;
 
 import java.util.List;
-import java.util.Timer;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
@@ -23,37 +22,35 @@ import javax.inject.Inject;
 
 import me.jessyan.mvparms.demo.mvp.contract.HomeContract;
 import me.jessyan.rxerrorhandler.handler.ErrorHandleSubscriber;
-import me.jessyan.rxerrorhandler.handler.RetryWithDelay;
-import timber.log.Timber;
 
 
 @ActivityScope
 public class HomePresenter extends BasePresenter<HomeContract.Model, HomeContract.View> {
-    private RxErrorHandler mErrorHandler;
-    private AppManager mAppManager;
-    private Application mApplication;
-    private List<User> mUsers;
-    private RecyclerView.Adapter mAdapter;
+    @Inject
+    RxErrorHandler mErrorHandler;
+    @Inject
+    AppManager mAppManager;
+    @Inject
+    Application mApplication;
+    @Inject
+    List<User> mUsers;
+    @Inject
+    RecyclerView.Adapter mAdapter;
     private int lastUserId = 1;
     private boolean isFirst = true;
     private int preEndIndex;
 
+
     @Inject
-    public HomePresenter(HomeContract.Model model, HomeContract.View rootView, RxErrorHandler handler
-            , AppManager appManager, Application application, List<User> list, RecyclerView.Adapter adapter) {
+    public HomePresenter(HomeContract.Model model, HomeContract.View rootView) {
         super(model, rootView);
-        this.mApplication = application;
-        this.mErrorHandler = handler;
-        this.mAppManager = appManager;
-        this.mUsers = list;
-        this.mAdapter = adapter;
     }
 
     /**
      * 使用 2017 Google IO 发布的 Architecture Components 中的 Lifecycles 的新特性 (此特性已被加入 Support library)
      * 使 {@code Presenter} 可以与 {@link SupportActivity} 和 {@link Fragment} 的部分生命周期绑定
      */
-    /*@OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
+    /*@OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     void onCreate() {
         requestUsers(true);//打开 App 时自动加载列表
     }*/
@@ -100,10 +97,12 @@ public class HomePresenter extends BasePresenter<HomeContract.Model, HomeContrac
                 }).subscribeOn(AndroidSchedulers.mainThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .doFinally(() -> {
-                    if (pullToRefresh)
-                        mRootView.hideLoading(lastUserId);//隐藏下拉刷新的进度条
+                    if (pullToRefresh){
+                        mRootView.hideLoading();//隐藏下拉刷新的进度条
+
+                    }
                     else{
-                        mRootView.endLoadMore(lastUserId);//隐藏上拉加载更多的进度条
+                        mRootView.endLoadMore();//隐藏上拉加载更多的进度条
                     }
                 })
                 .compose(RxLifecycleUtils.bindToLifecycle(mRootView))//使用 Rxlifecycle,使 Disposable 和 Activity 一起销毁

@@ -5,7 +5,7 @@ import android.text.TextUtils;
 import java.util.HashMap;
 
 /**
- * Created by Administrator on 2017/12/25 0025.
+ * Created by wangzhiyuan on 2017/12/25
  */
 
 public class FunctionsManager {

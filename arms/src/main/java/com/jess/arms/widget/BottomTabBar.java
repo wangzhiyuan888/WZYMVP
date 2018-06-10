@@ -1,4 +1,4 @@
-package com.hjm.bottomtabbar;
+package com.jess.arms.widget;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -6,10 +6,12 @@ import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.StateListDrawable;
+import android.os.Build;
 import android.support.annotation.ColorInt;
 import android.support.annotation.DrawableRes;
-import android.support.v4.content.ContextCompat;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -20,14 +22,15 @@ import android.widget.LinearLayout;
 import android.widget.TabHost;
 import android.widget.TextView;
 
-import com.hjm.bottomtabbar.custom.CustomFragmentTabHost;
-import com.hjm.bottomtabbar.util.TintUtil;
+import com.jess.arms.R;
+import com.jess.arms.widget.custom.CustomFragmentTabHost;
+import com.jess.arms.widget.util.TintUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by hjm on 2017/2/18/018.
+ * Created by wangzhiyuan on 2017/2/18/018.
  */
 public class BottomTabBar extends LinearLayout {
 
@@ -122,7 +125,7 @@ public class BottomTabBar extends LinearLayout {
      */
     public BottomTabBar init(FragmentManager manager) {
         mLayout = (LinearLayout) LayoutInflater.from(context).inflate(R.layout.bottom_tab_bar, null);
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+        LayoutParams layoutParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         mLayout.setLayoutParams(layoutParams);
         addView(mLayout);
 
@@ -142,7 +145,7 @@ public class BottomTabBar extends LinearLayout {
 
         mDivider = mLayout.findViewById(R.id.split);
         if (isShowDivider) {
-            LinearLayout.LayoutParams dividerParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, (int) dividerHeight);
+            LayoutParams dividerParams = new LayoutParams(LayoutParams.MATCH_PARENT, (int) dividerHeight);
             mDivider.setLayoutParams(dividerParams);
             mDivider.setBackgroundColor(dividerBackgroundColor);
             mDivider.setVisibility(VISIBLE);
@@ -362,7 +365,7 @@ public class BottomTabBar extends LinearLayout {
     public BottomTabBar isShowDivider(boolean isShowDivider) {
         this.isShowDivider = isShowDivider;
         if (isShowDivider) {
-            LinearLayout.LayoutParams dividerParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, (int) dividerHeight);
+            LayoutParams dividerParams = new LayoutParams(LayoutParams.MATCH_PARENT, (int) dividerHeight);
             mDivider.setLayoutParams(dividerParams);
             mDivider.setBackgroundColor(dividerBackgroundColor);
             mDivider.setVisibility(VISIBLE);
@@ -381,7 +384,7 @@ public class BottomTabBar extends LinearLayout {
     public BottomTabBar setDividerHeight(float height) {
         this.dividerHeight = height;
         if (isShowDivider) {
-            LinearLayout.LayoutParams dividerParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, (int) dividerHeight);
+            LayoutParams dividerParams = new LayoutParams(LayoutParams.MATCH_PARENT, (int) dividerHeight);
             mDivider.setLayoutParams(dividerParams);
         }
         return this;

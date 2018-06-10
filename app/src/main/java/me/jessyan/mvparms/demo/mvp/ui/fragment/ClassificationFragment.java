@@ -40,14 +40,8 @@ public class ClassificationFragment extends BaseFragment<ClassificationPresenter
         }
     }
 
-
-    public static ClassificationFragment newInstance() {
-        ClassificationFragment fragment = new ClassificationFragment();
-        return fragment;
-    }
-
     @Override
-    public void setupFragmentComponent(AppComponent appComponent) {
+    public void setupFragmentComponent(@NonNull AppComponent appComponent) {
         DaggerClassificationComponent //如找不到该类,请编译一下项目
                 .builder()
                 .appComponent(appComponent)
@@ -58,11 +52,11 @@ public class ClassificationFragment extends BaseFragment<ClassificationPresenter
 
     @Override
     public View initView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_classification, container, false);
+        return LayoutInflater.from(getActivity()).inflate(R.layout.fragment_classification, container, false);
     }
 
     @Override
-    public void initData(Bundle savedInstanceState) {
+    public void initData(@NonNull Bundle savedInstanceState) {
 
     }
 
@@ -79,7 +73,7 @@ public class ClassificationFragment extends BaseFragment<ClassificationPresenter
      */
 
     @Override
-    public void setData(Object data) {
+    public void setData(@NonNull Object data) {
 
     }
 
@@ -90,12 +84,12 @@ public class ClassificationFragment extends BaseFragment<ClassificationPresenter
     }
 
     @Override
-    public void hideLoading(int lastId) {
+    public void hideLoading() {
 
     }
 
     @Override
-    public void endLoadMore(int lastId) {
+    public void endLoadMore() {
 
     }
 

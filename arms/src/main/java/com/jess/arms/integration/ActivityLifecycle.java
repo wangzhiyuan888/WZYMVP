@@ -1,12 +1,12 @@
-/**
+/*
  * Copyright 2017 JessYan
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,13 +28,15 @@ import com.jess.arms.base.delegate.ActivityDelegateImpl;
 import com.jess.arms.base.delegate.FragmentDelegate;
 import com.jess.arms.base.delegate.IActivity;
 import com.jess.arms.integration.cache.Cache;
+import com.jess.arms.integration.cache.IntelligentCache;
 import com.jess.arms.utils.Preconditions;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import dagger.Lazy;
 
 
 /**
@@ -51,17 +53,19 @@ import javax.inject.Singleton;
 @Singleton
 public class ActivityLifecycle implements Application.ActivityLifecycleCallbacks {
 
-    private AppManager mAppManager;
-    private Application mApplication;
-    private Cache<String, Object> mExtras;
-    private FragmentManager.FragmentLifecycleCallbacks mFragmentLifecycle;
-    private List<FragmentManager.FragmentLifecycleCallbacks> mFragmentLifecycles;
+    @Inject
+    AppManager mAppManager;
+    @Inject
+    Application mApplication;
+    @Inject
+    Cache<String, Object> mExtras;
+    @Inject
+    Lazy<FragmentManager.FragmentLifecycleCallbacks> mFragmentLifecycle;
+    @Inject
+    Lazy<List<FragmentManager.FragmentLifecycleCallbacks>> mFragmentLifecycles;
 
     @Inject
-    public ActivityLifecycle(AppManager appManager, Application application, Cache<String, Object> extras) {
-        this.mAppManager = appManager;
-        this.mApplication = application;
-        this.mExtras = extras;
+    public ActivityLifecycle() {
     }
 
     @Override
@@ -80,7 +84,9 @@ public class ActivityLifecycle implements Application.ActivityLifecycleCallbacks
             if (activityDelegate == null) {
                 Cache<String, Object> cache = getCacheFromActivity((IActivity) activity);
                 activityDelegate = new ActivityDelegateImpl(activity);
-                cache.put(ActivityDelegate.ACTIVITY_DELEGATE, activityDelegate);
+                //使用 IntelligentCache.KEY_KEEP 作为 key 的前缀, 可以使储存的数据永久存储在内存中
+                //否则存储在 LRU 算法的存储空间中, 前提是 Activity 使用的是 IntelligentCache (框架默认使用)
+                cache.put(IntelligentCache.KEY_KEEP + ActivityDelegate.ACTIVITY_DELEGATE, activityDelegate);
             }
             activityDelegate.onCreate(savedInstanceState);
         }
@@ -153,25 +159,24 @@ public class ActivityLifecycle implements Application.ActivityLifecycleCallbacks
      * @param activity
      */
     private void registerFragmentCallbacks(Activity activity) {
+
         boolean useFragment = activity instanceof IActivity ? ((IActivity) activity).useFragment() : true;
         if (activity instanceof FragmentActivity && useFragment) {
 
-            if (mFragmentLifecycle == null) {
-                mFragmentLifecycle = new FragmentLifecycle();
-            }
+            //mFragmentLifecycle 为 Fragment 生命周期实现类, 用于框架内部对每个 Fragment 的必要操作, 如给每个 Fragment 配置 FragmentDelegate
+            //注册框架内部已实现的 Fragment 生命周期逻辑
+            ((FragmentActivity) activity).getSupportFragmentManager().registerFragmentLifecycleCallbacks(mFragmentLifecycle.get(), true);
 
-            ((FragmentActivity) activity).getSupportFragmentManager().registerFragmentLifecycleCallbacks(mFragmentLifecycle, true);
-
-            if (mFragmentLifecycles == null && mExtras.containsKey(ConfigModule.class.getName())) {
-                mFragmentLifecycles = new ArrayList<>();
-                List<ConfigModule> modules = (List<ConfigModule>) mExtras.get(ConfigModule.class.getName());
+            if (mExtras.containsKey(IntelligentCache.KEY_KEEP + ConfigModule.class.getName())) {
+                List<ConfigModule> modules = (List<ConfigModule>) mExtras.get(IntelligentCache.KEY_KEEP + ConfigModule.class.getName());
                 for (ConfigModule module : modules) {
-                    module.injectFragmentLifecycle(mApplication, mFragmentLifecycles);
+                    module.injectFragmentLifecycle(mApplication, mFragmentLifecycles.get());
                 }
-                mExtras.remove(ConfigModule.class.getName());
+                mExtras.remove(IntelligentCache.KEY_KEEP + ConfigModule.class.getName());
             }
 
-            for (FragmentManager.FragmentLifecycleCallbacks fragmentLifecycle : mFragmentLifecycles) {
+            //注册框架外部, 开发者扩展的 Fragment 生命周期逻辑
+            for (FragmentManager.FragmentLifecycleCallbacks fragmentLifecycle : mFragmentLifecycles.get()) {
                 ((FragmentActivity) activity).getSupportFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycle, true);
             }
         }
@@ -181,7 +186,7 @@ public class ActivityLifecycle implements Application.ActivityLifecycleCallbacks
         ActivityDelegate activityDelegate = null;
         if (activity instanceof IActivity) {
             Cache<String, Object> cache = getCacheFromActivity((IActivity) activity);
-            activityDelegate = (ActivityDelegate) cache.get(ActivityDelegate.ACTIVITY_DELEGATE);
+            activityDelegate = (ActivityDelegate) cache.get(IntelligentCache.KEY_KEEP + ActivityDelegate.ACTIVITY_DELEGATE);
         }
         return activityDelegate;
     }

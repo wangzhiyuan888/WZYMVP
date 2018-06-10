@@ -1,4 +1,4 @@
-/**
+/*
   * Copyright 2017 JessYan
   *
   * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +17,8 @@ package com.jess.arms.integration;
 
 import android.app.Activity;
 import android.app.Application;
+import android.app.Dialog;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Message;
@@ -67,17 +69,22 @@ public final class AppManager {
     public static final int ACTIVITY_MESSAGE = 5004;
     public static final int KILL_EXCEPT_CLASS = 5005;
     public static final int ERROR_MESSAGE = 5006;
-    private Application mApplication;
+    @Inject
+    Application mApplication;
     //管理所有存活的 Activity, 容器中的顺序仅仅是 Activity 的创建顺序, 并不能保证和 Activity 任务栈顺序一致
-    public List<Activity> mActivityList;
+    private List<Activity> mActivityList;
     //当前在前台的 Activity
     private Activity mCurrentActivity;
     //提供给外部扩展 AppManager 的 onReceive 方法
     private HandleListener mHandleListener;
 
     @Inject
-    public AppManager(Application application) {
-        this.mApplication = application;
+    public AppManager() {
+    }
+
+
+    @Inject
+    void init() {
         EventBus.getDefault().register(this);
     }
 
@@ -247,7 +254,7 @@ public final class AppManager {
      * 即使 App 进入后台或在这个 {@link Activity} 中打开一个之前已经存在的 {@link Activity}, 这时调用此方法
      * 还是会返回这个最近启动的 {@link Activity}, 因此基本不会出现 {@code null} 的情况
      * 比较适合大部分的使用场景, 如 startActivity
-     *
+     * <p>
      * Tips: mActivityList 容器中的顺序仅仅是 Activity 的创建顺序, 并不能保证和 Activity 任务栈顺序一致
      *
      * @return
@@ -278,12 +285,10 @@ public final class AppManager {
      * 添加 {@link Activity} 到集合
      */
     public void addActivity(Activity activity) {
-        if (mActivityList == null) {
-            mActivityList = new LinkedList<>();
-        }
         synchronized (AppManager.class) {
-            if (!mActivityList.contains(activity)) {
-                mActivityList.add(activity);
+            List<Activity> activities = getActivityList();
+            if (!activities.contains(activity)) {
+                activities.add(activity);
             }
         }
     }
@@ -333,9 +338,15 @@ public final class AppManager {
             Timber.tag(TAG).w("mActivityList == null when killActivity(Class)");
             return;
         }
-        for (Activity activity : mActivityList) {
-            if (activity.getClass().equals(activityClass)) {
-                activity.finish();
+        synchronized (AppManager.class) {
+            Iterator<Activity> iterator = getActivityList().iterator();
+            while (iterator.hasNext()) {
+                Activity next = iterator.next();
+
+                if (next.getClass().equals(activityClass)) {
+                    iterator.remove();
+                    next.finish();
+                }
             }
         }
     }
@@ -403,12 +414,13 @@ public final class AppManager {
 //        while (getActivityList().size() != 0) { //此方法只能兼容LinkedList
 //            getActivityList().remove(0).finish();
 //        }
-
-        Iterator<Activity> iterator = getActivityList().iterator();
-        while (iterator.hasNext()) {
-            Activity next = iterator.next();
-            iterator.remove();
-            next.finish();
+        synchronized (AppManager.class) {
+            Iterator<Activity> iterator = getActivityList().iterator();
+            while (iterator.hasNext()) {
+                Activity next = iterator.next();
+                iterator.remove();
+                next.finish();
+            }
         }
     }
 
@@ -419,15 +431,17 @@ public final class AppManager {
      */
     public void killAll(Class<?>... excludeActivityClasses) {
         List<Class<?>> excludeList = Arrays.asList(excludeActivityClasses);
-        Iterator<Activity> iterator = getActivityList().iterator();
-        while (iterator.hasNext()) {
-            Activity next = iterator.next();
+        synchronized (AppManager.class) {
+            Iterator<Activity> iterator = getActivityList().iterator();
+            while (iterator.hasNext()) {
+                Activity next = iterator.next();
 
-            if (excludeList.contains(next.getClass()))
-                continue;
+                if (excludeList.contains(next.getClass()))
+                    continue;
 
-            iterator.remove();
-            next.finish();
+                iterator.remove();
+                next.finish();
+            }
         }
     }
 
@@ -438,21 +452,27 @@ public final class AppManager {
      */
     public void killAll(String... excludeActivityName) {
         List<String> excludeList = Arrays.asList(excludeActivityName);
-        Iterator<Activity> iterator = getActivityList().iterator();
-        while (iterator.hasNext()) {
-            Activity next = iterator.next();
+        synchronized (AppManager.class) {
+            Iterator<Activity> iterator = getActivityList().iterator();
+            while (iterator.hasNext()) {
+                Activity next = iterator.next();
 
-            if (excludeList.contains(next.getClass().getName()))
-                continue;
+                if (excludeList.contains(next.getClass().getName()))
+                    continue;
 
-            iterator.remove();
-            next.finish();
+                iterator.remove();
+                next.finish();
+            }
         }
     }
 
 
     /**
      * 退出应用程序
+     * <p>
+     * 此方法经测试在某些机型上并不能完全杀死 App 进程, 几乎试过市面上大部分杀死进程的方式, 但都发现没卵用, 所以此
+     * 方法如果不能百分之百保证能杀死进程, 就不能贸然调用 {@link #release()} 释放资源, 否则会造成其他问题, 如果您
+     * 有测试通过的并能适用于绝大多数机型的杀死进程的方式, 望告知
      */
     public void appExit() {
         try {

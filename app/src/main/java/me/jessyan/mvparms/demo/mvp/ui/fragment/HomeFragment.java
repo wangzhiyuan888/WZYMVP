@@ -4,13 +4,16 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.github.jdsjlzx.interfaces.OnItemClickListener;
 import com.github.jdsjlzx.interfaces.OnLoadMoreListener;
+import com.github.jdsjlzx.interfaces.OnRefreshListener;
 import com.github.jdsjlzx.recyclerview.LRecyclerView;
 import com.github.jdsjlzx.recyclerview.LRecyclerViewAdapter;
 import com.github.jdsjlzx.recyclerview.ProgressStyle;
@@ -31,7 +34,6 @@ import me.jessyan.mvparms.demo.mvp.presenter.HomePresenter;
 
 import me.jessyan.mvparms.demo.R;
 import me.jessyan.mvparms.demo.mvp.ui.activity.MainActivity;
-import me.jessyan.mvparms.demo.mvp.ui.adapter.UserAdapter;
 import timber.log.Timber;
 
 
@@ -46,8 +48,6 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements HomeCon
     @Inject
     RecyclerView.Adapter mAdapter;
 
-    private LRecyclerViewAdapter mLRecyclerViewAdapter = null;
-
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -56,14 +56,8 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements HomeCon
         }
     }
 
-
-    public static HomeFragment newInstance() {
-        HomeFragment fragment = new HomeFragment();
-        return fragment;
-    }
-
     @Override
-    public void setupFragmentComponent(AppComponent appComponent) {
+    public void setupFragmentComponent(@NonNull AppComponent appComponent) {
         DaggerHomeComponent //如找不到该类,请编译一下项目
                 .builder()
                 .appComponent(appComponent)
@@ -74,22 +68,21 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements HomeCon
 
     @Override
     public View initView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_home, container, false);
+        return LayoutInflater.from(getActivity()).inflate(R.layout.fragment_home, container, false);
     }
 
     @Override
-    public void initData(Bundle savedInstanceState) {
+    public void initData(@NonNull Bundle savedInstanceState) {
+        Timber.tag("Fragment").d("11111111111111111111111111111111111");
         initRecyclerView();
-        mLRecyclerViewAdapter = new LRecyclerViewAdapter(mAdapter);
-        mRecyclerView.setAdapter(mLRecyclerViewAdapter);
+        mRecyclerView.setAdapter(mAdapter);
         //是否禁用自动加载更多功能,false为禁用, 默认开启自动加载更多功能
         mRecyclerView.setLoadMoreEnabled(true);
-        mPresenter.requestUsers(true);//打开 App 时自动加载列表
 
         //点击事件监听
-        ((UserAdapter)mAdapter).setOnItemClickListener(new DefaultAdapter.OnRecyclerViewItemClickListener() {
+        ((LRecyclerViewAdapter)mAdapter).setOnItemClickListener(new OnItemClickListener() {
             @Override
-            public void onItemClick(View view, int viewType, Object data, int position) {
+            public void onItemClick(View view, int position) {
                 String str = null;
                 try {
                     str = mFunctionsManager.invokeFunc(INTERFACE, "I Konw!", String.class);
@@ -97,13 +90,13 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements HomeCon
                 } catch (FunctionException e) {
                     e.printStackTrace();
                 }
-
             }
         });
+        Timber.tag("Fragment").d("11111111111111111111111111111111111");
     }
 
     @Override
-    public void setData(Object data) {
+    public void setData(@NonNull Object data) {
 
     }
 
@@ -111,7 +104,6 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements HomeCon
      * 初始化RecyclerView
      */
     private void initRecyclerView() {
-
         mRecyclerView.setRefreshProgressStyle(ProgressStyle.SysProgress);
         mRecyclerView.setArrowImageView(R.drawable.ic_pulltorefresh_arrow);
         mRecyclerView.setLoadingMoreProgressStyle(ProgressStyle.SysProgress);
@@ -171,9 +163,13 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements HomeCon
     }
 
     @Override
-    public void hideLoading(int lastId) {
+    public void hideLoading() {
+        if(null == mRecyclerView) return;
         Timber.tag(TAG).w("hideLoading");
-        mRecyclerView.refreshComplete(lastId);
+        Timber.tag(TAG).w("recyclerView:"+mRecyclerView);
+        Timber.tag(TAG).w("mLayoutManager:"+mLayoutManager);
+        Timber.tag(TAG).w("mAdapter:"+mAdapter);
+        mRecyclerView.refreshComplete(10);
         /*mRefreshLayout.finishRefresh();//传入false表示刷新失败*/
     }
 
@@ -202,8 +198,9 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements HomeCon
      * 结束加载更多
      */
     @Override
-    public void endLoadMore(int lastId) {
-        mRecyclerView.refreshComplete(lastId);
+    public void endLoadMore() {
+        if(null == mRecyclerView) return;
+        mRecyclerView.refreshComplete(10);
         /*mRefreshLayout.finishLoadmore();//传入false表示加载失败*/
     }
 
@@ -219,13 +216,14 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements HomeCon
 
     @Override
     public void onDestroy() {
+        Timber.tag(TAG).d("HomeFragment onDestory");
         DefaultAdapter.releaseAllHolder(mRecyclerView);//super.onDestroy()之后会unbind,所有view被置为null,所以必须在之前调用
         super.onDestroy();
         this.mRxPermissions = null;
         
     }
 
-    public com.github.jdsjlzx.interfaces.OnRefreshListener onRefreshListener = new com.github.jdsjlzx.interfaces.OnRefreshListener() {
+    public OnRefreshListener onRefreshListener = new OnRefreshListener() {
         @Override
         public void onRefresh() {
             mPresenter.requestUsers(true);
