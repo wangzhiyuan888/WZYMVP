@@ -11,8 +11,6 @@ buildscript {
         classpath 'com.github.dcendents:android-maven-gradle-plugin:2.0'
         //Gradle Bintray Plugin
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
-        //bottomtabbar
-        classpath 'com.novoda:bintray-release:0.5.0' //修改此处版本号为 0.5.0
     }
 }
 

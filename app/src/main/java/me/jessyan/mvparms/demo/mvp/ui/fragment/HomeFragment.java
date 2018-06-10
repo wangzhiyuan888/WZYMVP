@@ -73,7 +73,6 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements HomeCon
 
     @Override
     public void initData(@NonNull Bundle savedInstanceState) {
-        Timber.tag("Fragment").d("11111111111111111111111111111111111");
         initRecyclerView();
         mRecyclerView.setAdapter(mAdapter);
         //是否禁用自动加载更多功能,false为禁用, 默认开启自动加载更多功能
@@ -92,7 +91,6 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements HomeCon
                 }
             }
         });
-        Timber.tag("Fragment").d("11111111111111111111111111111111111");
     }
 
     @Override
@@ -199,7 +197,6 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements HomeCon
      */
     @Override
     public void endLoadMore() {
-        if(null == mRecyclerView) return;
         mRecyclerView.refreshComplete(10);
         /*mRefreshLayout.finishLoadmore();//传入false表示加载失败*/
     }
@@ -216,7 +213,6 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements HomeCon
 
     @Override
     public void onDestroy() {
-        Timber.tag(TAG).d("HomeFragment onDestory");
         DefaultAdapter.releaseAllHolder(mRecyclerView);//super.onDestroy()之后会unbind,所有view被置为null,所以必须在之前调用
         super.onDestroy();
         this.mRxPermissions = null;

@@ -66,7 +66,6 @@ public class FragmentDelegateImpl implements FragmentDelegate {
 
     @Override
     public void onCreateView(@Nullable View view, @Nullable Bundle savedInstanceState) {
-        Log.e("Fragment", "Fragment onCreate");
         //绑定到butterknife
         if (view != null)
             mUnbinder = ButterKnife.bind(mFragment, view);
@@ -74,7 +73,6 @@ public class FragmentDelegateImpl implements FragmentDelegate {
 
     @Override
     public void onActivityCreate(@Nullable Bundle savedInstanceState) {
-        Log.e("onActivityCreate", "Fragment onActivityCreate");
         iFragment.initData(savedInstanceState);
     }
 
@@ -105,6 +103,10 @@ public class FragmentDelegateImpl implements FragmentDelegate {
 
     @Override
     public void onDestroyView() {
+    }
+
+    @Override
+    public void onDestroy() {
         if (mUnbinder != null && mUnbinder != Unbinder.EMPTY) {
             try {
                 mUnbinder.unbind();
@@ -114,10 +116,6 @@ public class FragmentDelegateImpl implements FragmentDelegate {
                 Timber.w("onDestroyView: " + e.getMessage());
             }
         }
-    }
-
-    @Override
-    public void onDestroy() {
         if (iFragment != null && iFragment.useEventBus())//如果要使用eventbus请将此方法返回true
             EventBus.getDefault().unregister(mFragment);//注册到事件主线
         this.mUnbinder = null;
