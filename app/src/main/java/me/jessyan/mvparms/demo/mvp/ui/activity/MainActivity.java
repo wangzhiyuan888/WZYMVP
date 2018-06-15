@@ -38,6 +38,8 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainCon
     @BindView(R.id.bottom_bar)
     BottomTabBar mBottomBar;
 
+    private FunctionsManager fmager;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         setHasFragment(true);
@@ -115,6 +117,13 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainCon
         finish();
     }
 
+    @Override
+    protected void onDestroy() {
+        if(null != fmager)
+            fmager = null;
+        super.onDestroy();
+    }
+
     public void goToFragmentShowTypeView(Object object){
         ((BaseFragment)mBottomBar.getmTabHost().getWantFragment(mBottomBar.getmTabHost().getCurrentTab())).showTypeView(object);
 
@@ -127,10 +136,11 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainCon
     public void setFunctionsForFragment(String tag){
         FragmentManager fm = getSupportFragmentManager();
         BaseFragment fragment = (BaseFragment)fm.findFragmentByTag(tag);
-        FunctionsManager fmager = FunctionsManager.getInstance();
+        fmager = FunctionsManager.getInstance();
         fragment.setFunctionsManager(fmager.addFunction(new FunctionWithParamAndResult<String, String>(HomeFragment.INTERFACE) {
             @Override
             public String function(String data) {
+                startActivity(new Intent(MainActivity.this, MainActivity.class));
                 return "WZY I Love You,"+data;
 
             }

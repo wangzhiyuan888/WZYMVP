@@ -9,10 +9,15 @@ import java.util.HashMap;
  */
 
 public class FunctionsManager {
-    private static final FunctionsManager ourInstance = new FunctionsManager();
+    private static FunctionsManager ourInstance;
 
     public static FunctionsManager getInstance() {
-        return ourInstance;
+        if(null == ourInstance){
+            return ourInstance = new FunctionsManager();
+        }else {
+            return ourInstance;
+
+        }
     }
 
     private FunctionsManager() {
@@ -22,10 +27,10 @@ public class FunctionsManager {
         mFunctionWithResltOnly = new HashMap<>();
     }
 
-    private HashMap<String, FunctionNoParamNoResult> mFunctionNoParamNoResult;
-    private HashMap<String, FunctionWithParamAndResult> mFunctionWithParamAndResult;
-    private HashMap<String, FunctionWithParamOnly> mFunctionWithParamOnly;
-    private HashMap<String, FunctionWithResltOnly> mFunctionWithResltOnly;
+    private static HashMap<String, FunctionNoParamNoResult> mFunctionNoParamNoResult;
+    private static HashMap<String, FunctionWithParamAndResult> mFunctionWithParamAndResult;
+    private static HashMap<String, FunctionWithParamOnly> mFunctionWithParamOnly;
+    private static HashMap<String, FunctionWithResltOnly> mFunctionWithResltOnly;
 
     public FunctionsManager addFunction(FunctionNoParamNoResult function){
         mFunctionNoParamNoResult.put(function.mFuctionNmae, function);

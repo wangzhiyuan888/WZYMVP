@@ -162,11 +162,6 @@ public class HomeFragment extends BaseFragment<HomePresenter> implements HomeCon
 
     @Override
     public void hideLoading() {
-        if(null == mRecyclerView) return;
-        Timber.tag(TAG).w("hideLoading");
-        Timber.tag(TAG).w("recyclerView:"+mRecyclerView);
-        Timber.tag(TAG).w("mLayoutManager:"+mLayoutManager);
-        Timber.tag(TAG).w("mAdapter:"+mAdapter);
         mRecyclerView.refreshComplete(10);
         /*mRefreshLayout.finishRefresh();//传入false表示刷新失败*/
     }
