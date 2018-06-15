@@ -140,7 +140,6 @@ public class MainActivity extends BaseActivity<MainPresenter> implements MainCon
         fragment.setFunctionsManager(fmager.addFunction(new FunctionWithParamAndResult<String, String>(HomeFragment.INTERFACE) {
             @Override
             public String function(String data) {
-                startActivity(new Intent(MainActivity.this, MainActivity.class));
                 return "WZY I Love You,"+data;
 
             }
